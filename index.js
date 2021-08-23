@@ -3,7 +3,7 @@ const process = require('process');
 const scratchVM = require('scratch-vm');
 const readlineSync = require('readline-sync');
 
-// Disable vm logging. Need to be done after importing ScratchVM.
+// Disable vm logging. Need to be done after importing scratch-vm.
 const minilog = require('minilog');
 minilog.disable();
 
@@ -29,6 +29,12 @@ if (process.argv.length < 3) {
   process.exit(1);
 }
 
+if (process.argv[2] === '--version') {
+  const { version } = require('./package.json');
+  process.stdout.write(version + '\n');
+  process.exit(0);
+}
+
 const vm = new scratchVM();
 //const storage = new scratchStorage();
 
@@ -47,15 +53,13 @@ vm.runtime.on('QUESTION', function (question) {
   }
 });
 
-const fileName = process.argv[2];
-
-fs.readFile(fileName, function (err, data) {
+fs.readFile(process.argv[2], function (err, data) {
   if (err) {
     process.exit(1);
   }
 
   vm.loadProject(data)
-    .then((input) => {
+    .then(() => {
       for (let i = 0; i < vm.runtime.targets.length; i++) {
         vm.runtime.targets[i].visible = false;
       }
@@ -66,7 +70,7 @@ fs.readFile(fileName, function (err, data) {
         process.exit(0);
       });
     })
-    .catch(function (err) {
+    .catch(function () {
       process.exit(1);
     });
 });
