@@ -4,7 +4,8 @@
   "description": "Run Scratch from command line",
   "main": "./index.js",
   "scripts": {
-    "start": "node ./index.js"
+    "start": "node ./index.js",
+    "build": "./build.sh"
   },
   "repository": {
     "type": "git",
@@ -22,5 +23,8 @@
   "dependencies": {
     "readline-sync": "^1.4.10",
     "scratch-vm": "0.2.0-prerelease.20210823104738"
+  },
+  "devDependencies": {
+    "pkg": "^5.3.1"
   }
 }
