@@ -24,27 +24,55 @@ const rl = readline.createInterface({
 });
 
 let lines = [];
-let waiting = false;
+let ask_queue = [];
+let cur_pos = 0;
 
 rl.on('line', (text) => {
   lines.push(text);
-  process.stdout.write('> ' + text);
-  if (waiting) {
-    answer(lines.shift());
-    waiting = false;
+  if (ask_queue.length > 0) {
+    try_to_answer();
   }
 });
 
 const vm = new scratchVM();
-//const storage = new scratchStorage();
-
-//vm.attachStorage(storage);
 
 vm.start();
 vm.setTurboMode(true);
 
-function answer(text) {
-  vm.runtime.emit('ANSWER', text);
+function try_to_answer() {
+  if (ask_queue[0]) {
+    // read_token
+    while (lines.length > 0) {
+      while (cur_pos < lines[0].length && lines[0][cur_pos] === ' ') {
+        cur_pos++;
+      }
+      if (cur_pos === lines[0].length) {
+        lines.shift();
+        cur_pos = 0;
+      } else {
+        let nxt_pos = cur_pos + 1;
+        while (nxt_pos < lines[0].length && lines[0][nxt_pos] !== ' ') {
+          nxt_pos++;
+        }
+        vm.runtime.emit('ANSWER', lines[0].substr(cur_pos, nxt_pos - cur_pos));
+        cur_pos = nxt_pos;
+        if (cur_pos === lines[0].length) {
+          cur_pos = 0;
+          lines.shift();
+        }
+        ask_queue.shift();
+        break;
+      }
+    }
+  } else {
+    // read_line
+    if (lines.length > 0) {
+      vm.runtime.emit('ANSWER', lines[0].substr(cur_pos));
+      cur_pos = 0;
+      lines.shift();
+      ask_queue.shift();
+    }
+  }
 }
 
 vm.runtime.on('SAY', function (target, type, text) {
@@ -53,8 +81,8 @@ vm.runtime.on('SAY', function (target, type, text) {
 
 vm.runtime.on('QUESTION', function (question) {
   if (question !== null) {
-    if (lines.length > 0) answer(lines.shift());
-    else waiting = true;
+    ask_queue.push(question === 'read_token');
+    try_to_answer();
   }
 });
 
