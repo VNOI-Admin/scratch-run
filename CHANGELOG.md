@@ -1,5 +1,9 @@
 # scratch-run changelog
 
+#### v0.0.3
+
+- Disable bytecode generation
+
 #### v0.0.2
 
 - Switch to `readline` as `readline-sync` does not work inside sandbox.
