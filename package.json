@@ -21,7 +21,6 @@
   },
   "homepage": "https://github.com/VNOI-Admin/scratch-run#readme",
   "dependencies": {
-    "readline-sync": "^1.4.10",
     "scratch-vm": "0.2.0-prerelease.20210823104738"
   },
   "devDependencies": {

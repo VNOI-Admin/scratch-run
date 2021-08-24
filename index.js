@@ -1,28 +1,10 @@
 const fs = require('fs');
-const process = require('process');
+const readline = require('readline');
 const scratchVM = require('scratch-vm');
-const readlineSync = require('readline-sync');
 
 // Disable vm logging. Need to be done after importing scratch-vm.
 const minilog = require('minilog');
 minilog.disable();
-
-readlineSync.setDefaultOptions({ prompt: '' });
-
-let _buffer = [];
-let _buffer_used = 0;
-
-function get_input() {
-  if (_buffer_used == _buffer.length) {
-    _buffer = [];
-    _buffer_used = 0;
-    while (_buffer.length == 0) {
-      _buffer = readlineSync.prompt().split(' ');
-    }
-  }
-  const res = _buffer[_buffer_used++];
-  return res;
-}
 
 if (process.argv.length < 3) {
   process.stdout.write('ERROR: No file argument\n');
@@ -35,6 +17,24 @@ if (process.argv[2] === '--version') {
   process.exit(0);
 }
 
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  terminal: false
+});
+
+let lines = [];
+let waiting = false;
+
+rl.on('line', (text) => {
+  lines.push(text);
+  process.stdout.write('> ' + text);
+  if (waiting) {
+    answer(lines.shift());
+    waiting = false;
+  }
+});
+
 const vm = new scratchVM();
 //const storage = new scratchStorage();
 
@@ -43,13 +43,18 @@ const vm = new scratchVM();
 vm.start();
 vm.setTurboMode(true);
 
+function answer(text) {
+  vm.runtime.emit('ANSWER', text);
+}
+
 vm.runtime.on('SAY', function (target, type, text) {
   process.stdout.write(text + '\n');
 });
 
 vm.runtime.on('QUESTION', function (question) {
   if (question !== null) {
-    vm.runtime.emit('ANSWER', get_input());
+    if (lines.length > 0) answer(lines.shift());
+    else waiting = true;
   }
 });
 
