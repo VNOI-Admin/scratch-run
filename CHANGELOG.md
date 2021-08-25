@@ -3,6 +3,7 @@
 #### v0.0.4
 
 - Minify code with ncc before passing to pkg for compiling
+- Correctly check whitespace characters (space, horizontal tab, vertical tab, form feed)
 
 #### v0.0.3
 

@@ -44,11 +44,17 @@ const vm = new scratchVM();
 vm.start();
 vm.setTurboMode(true);
 
+function is_space(c) {
+  // based on regex \s
+  // no need to check for '\n' and '\r'. they are handled by readline
+  return c === ' ' || c === '\t' || c === '\v' || c === '\f';
+}
+
 function try_to_answer() {
   if (ask_queue[0]) {
     // read_token
     while (lines.length > 0) {
-      while (cur_pos < lines[0].length && lines[0][cur_pos] === ' ') {
+      while (cur_pos < lines[0].length && is_space(lines[0][cur_pos])) {
         cur_pos++;
       }
       if (cur_pos === lines[0].length) {
@@ -56,7 +62,7 @@ function try_to_answer() {
         cur_pos = 0;
       } else {
         let nxt_pos = cur_pos + 1;
-        while (nxt_pos < lines[0].length && lines[0][nxt_pos] !== ' ') {
+        while (nxt_pos < lines[0].length && !is_space(lines[0][nxt_pos])) {
           nxt_pos++;
         }
         vm.runtime.emit('ANSWER', lines[0].substr(cur_pos, nxt_pos - cur_pos));
