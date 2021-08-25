@@ -24,34 +24,53 @@ class TestScratchRun(unittest.TestCase):
 
     def test_say_think(self):
         proc = Popen([self.executable, 'say_think.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        expected_output = b'Hello world!\n'
         stdout, stderr = proc.communicate()
-        self.assertTrue(stdout == expected_output and not stderr)
+
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(stdout, b'Hello world!\n')
+        self.assertEqual(stderr, b'')
 
     def test_echo(self):
+        test_message = b'echo: Hello, World!\n'
+
         proc = Popen([self.executable, 'echo.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        test_message = b'echo: Hello, World!'
-        stdout, stderr = proc.communicate(test_message + b'\n')
-        self.assertTrue(stdout.strip() == test_message and not stderr)
+        stdout, stderr = proc.communicate(test_message)
+
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(stdout, test_message)
+        self.assertEqual(stderr, b'')
 
     def test_aplusb_token(self):
         proc = Popen([self.executable, 'aplusb.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        input = b'123 456\n'
-        stdout, stderr = proc.communicate(input)
-        self.assertTrue(stdout.strip() == b'579' and not stderr)
+        stdout, stderr = proc.communicate(b'123 456\n')
+
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(stdout, b'579\n')
+        self.assertEqual(stderr, b'')
 
     def test_aplusb_line(self):
         proc = Popen([self.executable, 'aplusb.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        input = b'123\n456\n'
-        stdout, stderr = proc.communicate(input)
-        self.assertTrue(stdout.strip() == b'579' and not stderr)
+        stdout, stderr = proc.communicate(b'123 456\n')
+
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(stdout, b'579\n')
+        self.assertEqual(stderr, b'')
 
     def test_permutation(self):
         proc = Popen([self.executable, 'permutation.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        input = b'3\n'
-        expected_output = b'123\n132\n213\n231\n312\n321\n'
-        stdout, stderr = proc.communicate(input)
-        self.assertTrue(stdout == expected_output and not stderr)
+        stdout, stderr = proc.communicate(b'3\n')
+
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(stdout, b'123\n132\n213\n231\n312\n321\n')
+        self.assertEqual(stderr, b'')
+
+    def test_invalid_file(self):
+        proc = Popen([self.executable, 'invalid.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = proc.communicate()
+
+        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(stdout, b'')
+        self.assertEqual(stderr, b'scratch-vm encountered an error: Error: Non-ascii character in FixedAsciiString\n')
 
 
 if __name__ == '__main__':

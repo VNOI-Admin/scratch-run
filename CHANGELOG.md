@@ -4,6 +4,7 @@
 
 - Do not print newline character for Think block
 - Print error to stderr
+- Fix error `Cannot find module 'text-encoding'`
 
 #### v0.0.4
 
