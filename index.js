@@ -1,3 +1,8 @@
+// For some reason, `new Buffer()` is added to the compiled code by ncc.
+// This triggers the warning "DeprecationWarning: Buffer() is deprecated due to security and usability issues."
+// Until it is fixed in ncc, we workaround by suppressing the warning.
+process.removeAllListeners('warning');
+
 const fs = require('fs');
 const readline = require('readline');
 const scratchVM = require('scratch-vm');
