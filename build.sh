@@ -6,6 +6,7 @@ BUILD_CMD="npx pkg index.js --no-bytecode --public-packages \"*\" --public"
 rm -rf build && mkdir build && cd build
 
 npx ncc build ../index.js --minify --out .
+echo "(()=>require(\"text-encoding\"))();" >> index.js # Hack to force inclusion of text-encoding
 
 $BUILD_CMD -t node14-linux-x64 --out-path linux-x64
 cd linux-x64
