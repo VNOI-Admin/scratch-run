@@ -1,6 +1,6 @@
 {
   "name": "scratch-run",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Run Scratch from command line",
   "main": "./index.js",
   "scripts": {
@@ -24,6 +24,7 @@
     "scratch-vm": "0.2.0-prerelease.20210823104738"
   },
   "devDependencies": {
+    "@vercel/ncc": "^0.29.2",
     "pkg": "^5.3.1"
   }
 }
