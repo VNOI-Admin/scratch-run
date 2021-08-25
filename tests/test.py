@@ -22,6 +22,12 @@ def get_executable():
 class TestScratchRun(unittest.TestCase):
     executable = get_executable()
 
+    def test_say_think(self):
+        proc = Popen([self.executable, 'say_think.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        expected_output = b'Hello world!\n'
+        stdout, stderr = proc.communicate()
+        self.assertTrue(stdout == expected_output and not stderr)
+
     def test_echo(self):
         proc = Popen([self.executable, 'echo.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         test_message = b'echo: Hello, World!'
@@ -40,7 +46,7 @@ class TestScratchRun(unittest.TestCase):
         stdout, stderr = proc.communicate(input)
         self.assertTrue(stdout.strip() == b'579' and not stderr)
 
-    def test_permutation_line(self):
+    def test_permutation(self):
         proc = Popen([self.executable, 'permutation.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         input = b'3\n'
         expected_output = b'123\n132\n213\n231\n312\n321\n'
