@@ -1,8 +1,8 @@
 # scratch-run [![Build Status](https://github.com/VNOI-Admin/scratch-run/actions/workflows/main.yml/badge.svg)](https://github.com/VNOI-Admin/scratch-run/actions/)
 
-scratch-run is an CLI interpreter for Scratch based on [scratch-vm](https://github.com/LLK/scratch-vm).
+scratch-run is a CLI interpreter for Scratch based on [scratch-vm](https://github.com/LLK/scratch-vm).
 
-scratch-run was created to help judging solutions written in Scratch. It is used mainly in our official online judge [VNOJ](https://github.com/VNOI-Admin/OJ), but it can also be used separately.
+scratch-run was created to judge solutions written in Scratch. It is used mainly in our official online judge [VNOJ](https://github.com/VNOI-Admin/OJ), but it can also be used separately.
 
 scratch-run is written in Node.js and packed with [pkg](https://github.com/vercel/pkg). No dependencies are required for running.
 
@@ -32,7 +32,7 @@ You need Node.js and npm to build.
 git clone https://github.com/VNOI-Admin/scratch-run.git
 cd scratch-run
 npm install
-./build.sh
+npm run build
 ```
 
 Built binaries will be saved in `build` directory.
