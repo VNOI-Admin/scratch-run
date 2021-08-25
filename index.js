@@ -87,7 +87,12 @@ function try_to_answer() {
 }
 
 vm.runtime.on('SAY', function (target, type, text) {
-  process.stdout.write(text + '\n');
+  if (type === 'say') {
+    process.stdout.write(text + '\n');
+  } else {
+    // type === 'think'
+    process.stdout.write(text);
+  }
 });
 
 vm.runtime.on('QUESTION', function (question) {
