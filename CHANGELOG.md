@@ -2,6 +2,8 @@
 
 #### v0.0.5
 
+- Do not print newline character for Think block
+
 #### v0.0.4
 
 - Minify code with ncc before passing to pkg for compiling
