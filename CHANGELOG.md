@@ -3,6 +3,7 @@
 #### v0.0.5
 
 - Do not print newline character for Think block
+- Print error to stderr
 
 #### v0.0.4
 
