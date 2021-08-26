@@ -154,6 +154,10 @@ function run_scratch_file(filename) {
 }
 
 if (process.argv[2] === '--check') {
+  if (process.argv.length < 4) {
+    process.stdout.write('ERROR: No file argument\n');
+    process.exit(1);
+  }
   check_scratch_file(process.argv[3]);
 } else {
   run_scratch_file(process.argv[2]);
