@@ -1,5 +1,7 @@
 # scratch-run changelog
 
+#### v0.0.6
+
 #### v0.0.5
 
 - Do not print newline character for Think block

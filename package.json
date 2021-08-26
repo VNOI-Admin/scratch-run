@@ -1,6 +1,6 @@
 {
   "name": "scratch-run",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Run Scratch from command line",
   "main": "./index.js",
   "scripts": {
