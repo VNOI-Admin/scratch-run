@@ -104,7 +104,7 @@ vm.runtime.on('QUESTION', function (question) {
 
 fs.readFile(process.argv[2], function (err, data) {
   if (err) {
-    process.stderr.write(err.message);
+    process.stderr.write(err + '\n');
     process.exit(1);
   }
 
@@ -121,7 +121,6 @@ fs.readFile(process.argv[2], function (err, data) {
       });
     })
     .catch(function (err) {
-      // err is a string
       process.stderr.write('scratch-vm encountered an error: ' + err + '\n');
       process.exit(1);
     });
