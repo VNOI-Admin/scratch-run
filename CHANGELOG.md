@@ -2,6 +2,8 @@
 
 #### v0.0.6
 
+- Add argument `--check` for validating Scratch file but not running.
+
 #### v0.0.5
 
 - Do not print newline character for Think block
