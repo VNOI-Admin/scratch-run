@@ -50,7 +50,7 @@ class TestScratchRun(unittest.TestCase):
 
     def test_aplusb_line(self):
         proc = Popen([self.executable, 'aplusb.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        stdout, stderr = proc.communicate(b'123 456\n')
+        stdout, stderr = proc.communicate(b'123\n456\n')
 
         self.assertEqual(proc.returncode, 0)
         self.assertEqual(stdout, b'579\n')
