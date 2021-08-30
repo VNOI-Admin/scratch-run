@@ -24,6 +24,8 @@ scratch-run tests/echo.sb3
 
 Type in something and it will be echoed back!
 
+For more detailed instructions, see our [wiki page](https://github.com/VNOI-Admin/scratch-run/wiki).
+
 ## Build Instructions
 
 You need Node.js and npm to build.
