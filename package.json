@@ -21,10 +21,10 @@
   },
   "homepage": "https://github.com/VNOI-Admin/scratch-run#readme",
   "dependencies": {
-    "scratch-vm": "0.2.0-prerelease.20210823104738"
+    "scratch-vm": "0.2.0-prerelease.20211015091140"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.29.2",
-    "pkg": "^5.3.1"
+    "@vercel/ncc": "^0.31.1",
+    "pkg": "^5.3.3"
   }
 }
