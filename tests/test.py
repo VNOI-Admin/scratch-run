@@ -40,6 +40,16 @@ class TestScratchRun(unittest.TestCase):
         self.assertEqual(stdout, test_message)
         self.assertEqual(stderr, b'')
 
+    def test_echo_json(self):
+        test_message = b'echo: Hello, World!\n'
+
+        proc = Popen([self.executable, 'echo.json'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = proc.communicate(test_message)
+
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(stdout, test_message)
+        self.assertEqual(stderr, b'')
+
     def test_aplusb_token(self):
         proc = Popen([self.executable, 'aplusb.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         stdout, stderr = proc.communicate(b'123 456\n')
