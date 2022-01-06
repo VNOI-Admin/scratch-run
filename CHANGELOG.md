@@ -1,5 +1,10 @@
 # scratch-run changelog
 
+### v0.0.7
+
+- Use Node 16.13.0
+- Add binaries for arm64
+
 #### v0.0.6
 
 - Add argument `--check` for validating Scratch file but not running.

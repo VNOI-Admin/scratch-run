@@ -10,11 +10,11 @@ os.chdir(__DIR__)
 def get_executable():
     # FIXME: check architecture
     if platform.system() == 'Linux':
-        return '../build/linux-x64/scratch-run'
+        return '../build/linux-amd64/scratch-run'
     elif platform.system() == 'Darwin':
-        return '../build/macos-x64/scratch-run'
+        return '../build/macos-amd64/scratch-run'
     elif platform.system() == 'Windows':
-        return '../build/win-x64/scratch-run'
+        return '../build/win-amd64/scratch-run'
     else:
         raise RuntimeError('Unsupported platform: {}'.format(platform.system()))
 

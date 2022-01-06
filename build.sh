@@ -8,20 +8,44 @@ rm -rf build && mkdir build && cd build
 npx ncc build ../index.js --minify --out .
 echo "(()=>require(\"text-encoding\"))();" >> index.js # Hack to force inclusion of text-encoding
 
-$BUILD_CMD -t node14-linux-x64 --out-path linux-x64
-cd linux-x64
+# Linux amd64
+$BUILD_CMD -t node16.13.0-linux-x64 --out-path linux-amd64
+cd linux-amd64
 mv index scratch-run
 zip "../scratch-run_"$VERSION"_linux_amd64.zip" scratch-run
 cd ..
 
-$BUILD_CMD -t node14-macos-x64 --out-path macos-x64
-cd macos-x64
+# Linux arm64
+$BUILD_CMD -t node16.13.0-linux-arm64 --out-path linux-arm64
+cd linux-arm64
+mv index scratch-run
+zip "../scratch-run_"$VERSION"_linux_arm64.zip" scratch-run
+cd ..
+
+# macOS amd64
+$BUILD_CMD -t node16.13.0-macos-x64 --out-path macos-amd64
+cd macos-amd64
 mv index scratch-run
 zip "../scratch-run_"$VERSION"_macos_amd64.zip" scratch-run
 cd ..
 
-$BUILD_CMD -t node14-win-x64 --out-path win-x64
-cd win-x64
+# macOS arm64
+$BUILD_CMD -t node16.13.0-macos-arm64 --out-path macos-arm64
+cd macos-arm64
+mv index scratch-run
+zip "../scratch-run_"$VERSION"_macos_arm64.zip" scratch-run
+cd ..
+
+# Windows amd64
+$BUILD_CMD -t node16.13.0-win-x64 --out-path win-amd64
+cd win-amd64
 mv index.exe scratch-run.exe
 zip "../scratch-run_"$VERSION"_win_amd64.zip" scratch-run.exe
+cd ..
+
+# Windows arm64
+$BUILD_CMD -t node16.13.0-win-arm64 --out-path win-arm64
+cd win-arm64
+mv index.exe scratch-run.exe
+zip "../scratch-run_"$VERSION"_win_arm64.zip" scratch-run.exe
 cd ..

@@ -25,6 +25,12 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Compile ldid
+        run: |
+          sudo apt install -y libplist-dev
+          git clone git://git.saurik.com/ldid.git
+          g++ -pipe -o ldid/ldid ldid/ldid.cpp -I. -x c ldid/lookup2.c -lcrypto -lplist -Os -fwhole-program -flto -s
+          echo "${{github.workspace}}/ldid" >> $GITHUB_PATH
       - run: npm ci
       - run: npm run build
       - run: python tests/test.py
