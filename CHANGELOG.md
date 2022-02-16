@@ -1,5 +1,10 @@
 # scratch-run changelog
 
+### v0.0.8
+
+- Use Node 16.13.2
+- Fix bug when using block Think with a number
+
 ### v0.0.7
 
 - Use Node 16.13.0
