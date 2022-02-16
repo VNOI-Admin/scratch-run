@@ -113,6 +113,7 @@ function run_scratch_file(filename) {
   }
 
   vm.runtime.on('SAY', function (target, type, text) {
+    text = text.toString();
     if (type === 'say') {
       process.stdout.write(text + '\n');
     } else {
