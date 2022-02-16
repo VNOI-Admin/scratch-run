@@ -1,6 +1,6 @@
 {
   "name": "scratch-run",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Run Scratch from command line",
   "main": "./index.js",
   "scripts": {
@@ -22,10 +22,10 @@
   },
   "homepage": "https://github.com/VNOI-Admin/scratch-run#readme",
   "dependencies": {
-    "scratch-vm": "0.2.0-prerelease.20220106083835"
+    "scratch-vm": "0.2.0-prerelease.20220214082923"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.33.1",
-    "pkg": "^5.5.1"
+    "@vercel/ncc": "^0.33.3",
+    "pkg": "^5.5.2"
   }
 }
