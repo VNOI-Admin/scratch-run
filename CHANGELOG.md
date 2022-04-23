@@ -1,5 +1,10 @@
 # scratch-run changelog
 
+### v0.0.9
+
+- Use Node 16.14.2
+- Block extensions (e.g., music)
+
 ### v0.0.8
 
 - Use Node 16.13.2
