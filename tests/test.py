@@ -90,6 +90,22 @@ class TestScratchRun(unittest.TestCase):
         self.assertEqual(stdout, b'')
         self.assertEqual(stderr, b'Not a valid Scratch file: Error: Non-ascii character in FixedAsciiString\n')
 
+    def test_music_extension(self):
+        proc = Popen([self.executable, 'music_extension.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = proc.communicate()
+
+        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(stdout, b'')
+        self.assertEqual(stderr, b'scratch-vm encountered an error: Can not use extension music\n')
+
+    def test_check_music_extension(self):
+        proc = Popen([self.executable, '--check', 'music_extension.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = proc.communicate()
+
+        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(stdout, b'')
+        self.assertEqual(stderr, b'Not a valid Scratch file: Can not use extension music\n')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -27,6 +27,14 @@ function check_scratch_file(filename) {
   vm.start();
   vm.setTurboMode(true);
 
+  // Block loading extensions (e.g., music)
+  vm.extensionManager.loadExtensionURL = (id) => {
+    process.stderr.write(
+      'Not a valid Scratch file: Can not use extension ' + id + '\n'
+    );
+    process.exit(1);
+  };
+
   fs.readFile(filename, function (err, data) {
     if (err) {
       process.stderr.write(err + '\n');
@@ -63,9 +71,16 @@ function run_scratch_file(filename) {
   });
 
   const vm = new scratchVM();
-
   vm.start();
   vm.setTurboMode(true);
+
+  // Block loading extensions (e.g., music)
+  vm.extensionManager.loadExtensionURL = (id) => {
+    process.stderr.write(
+      'scratch-vm encountered an error: Can not use extension ' + id + '\n'
+    );
+    process.exit(1);
+  };
 
   function is_space(c) {
     // based on regex \s
