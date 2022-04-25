@@ -104,8 +104,14 @@ function run_scratch_file(filename) {
   });
 
   const vm = new scratchVM();
-  vm.start();
-  vm.setTurboMode(true);
+
+  // Hack to speeding up vm.runtime._step calls
+  const real_step = vm.runtime._step.bind(vm.runtime);
+  vm.runtime._step = () => {
+    for (let loop_count = 0; loop_count < 5000; ++loop_count) {
+      setImmediate(real_step);
+    }
+  };
 
   // Block loading extensions (e.g., music)
   vm.extensionManager.loadExtensionURL = (id) => {
@@ -162,6 +168,9 @@ function run_scratch_file(filename) {
       }
     }
   }
+
+  vm.start();
+  vm.setTurboMode(true);
 
   vm.runtime.on('SAY', function (target, type, text) {
     text = text.toString();
