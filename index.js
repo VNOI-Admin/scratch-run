@@ -52,16 +52,49 @@ function check_scratch_file(filename) {
   });
 }
 
+class Queue {
+  constructor(data = []) {
+    this._data = Array.from(data);
+    this._head_ptr = 0;
+  }
+
+  get length() {
+    return this._data.length - this._head_ptr;
+  }
+
+  front() {
+    if (this.length === 0) {
+      return null;
+    }
+    return this._data[this._head_ptr];
+  }
+
+  push(elm) {
+    this._data.push(elm);
+  }
+
+  shift() {
+    if (this.length === 0) {
+      return null;
+    }
+    return this._data[this._head_ptr++];
+  }
+
+  toString() {
+    return this._data.slice(this._head_ptr).toString();
+  }
+}
+
 function run_scratch_file(filename) {
+  let lines = new Queue();
+  let ask_queue = new Queue();
+  let cur_pos = 0;
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
     terminal: false
   });
-
-  let lines = [];
-  let ask_queue = [];
-  let cur_pos = 0;
 
   rl.on('line', (text) => {
     lines.push(text);
@@ -89,26 +122,30 @@ function run_scratch_file(filename) {
   }
 
   function try_to_answer() {
-    if (ask_queue[0]) {
+    if (ask_queue.front()) {
       // read_token
       while (lines.length > 0) {
-        while (cur_pos < lines[0].length && is_space(lines[0][cur_pos])) {
+        const line_front = lines.front();
+        while (cur_pos < line_front.length && is_space(line_front[cur_pos])) {
           cur_pos++;
         }
-        if (cur_pos === lines[0].length) {
+        if (cur_pos === line_front.length) {
           lines.shift();
           cur_pos = 0;
         } else {
           let nxt_pos = cur_pos + 1;
-          while (nxt_pos < lines[0].length && !is_space(lines[0][nxt_pos])) {
+          while (
+            nxt_pos < line_front.length &&
+            !is_space(line_front[nxt_pos])
+          ) {
             nxt_pos++;
           }
           vm.runtime.emit(
             'ANSWER',
-            lines[0].substr(cur_pos, nxt_pos - cur_pos)
+            line_front.substr(cur_pos, nxt_pos - cur_pos)
           );
           cur_pos = nxt_pos;
-          if (cur_pos === lines[0].length) {
+          if (cur_pos === line_front.length) {
             cur_pos = 0;
             lines.shift();
           }
@@ -119,9 +156,8 @@ function run_scratch_file(filename) {
     } else {
       // read_line
       if (lines.length > 0) {
-        vm.runtime.emit('ANSWER', lines[0].substr(cur_pos));
+        vm.runtime.emit('ANSWER', lines.shift().substr(cur_pos));
         cur_pos = 0;
-        lines.shift();
         ask_queue.shift();
       }
     }
