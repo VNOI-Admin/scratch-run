@@ -1,5 +1,12 @@
 # scratch-run changelog
 
+### v0.0.10
+
+- Use custom Queue for lines and ask_queue
+- Hack to speeding up `vm.runtime._step` calls
+
+Thank @quangloc99 for the idea and implementation.
+
 ### v0.0.9
 
 - Use Node 16.14.2
