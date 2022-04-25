@@ -1,7 +1,7 @@
 import os
 import platform
 import unittest
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, TimeoutExpired
 
 __DIR__ = os.path.dirname(os.path.realpath(__file__))
 os.chdir(__DIR__)
@@ -72,6 +72,23 @@ class TestScratchRun(unittest.TestCase):
 
         self.assertEqual(proc.returncode, 0)
         self.assertEqual(stdout, b'123\n132\n213\n231\n312\n321\n')
+        self.assertEqual(stderr, b'')
+
+    def test_sum_1ton(self):
+        N = 100000
+        inp = f'{N}\n'
+        for i in range(N):
+            inp += str(i + 1) + '\n'
+
+        proc = Popen([self.executable, 'sum_1ton.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        try:
+            stdout, stderr = proc.communicate(inp.encode(), timeout=2)
+        except TimeoutExpired:
+            proc.kill()
+            raise
+
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(stdout, (str(N * (N + 1) // 2) + '\n').encode())
         self.assertEqual(stderr, b'')
 
     def test_invalid_file(self):
