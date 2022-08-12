@@ -1,5 +1,9 @@
 # scratch-run changelog
 
+### v0.0.11
+
+- Use Node 16.16.0
+
 ### v0.0.10
 
 - Use custom Queue for lines and ask_queue

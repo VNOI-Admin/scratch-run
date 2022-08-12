@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NODE_VERSION=16.14.2
+NODE_VERSION=16.16.0
 
 VERSION=$(node -p -e "require('./package.json').version")
 BUILD_CMD="npx pkg index.js --no-bytecode --public-packages \"*\" --public"
