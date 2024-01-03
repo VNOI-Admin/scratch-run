@@ -1,14 +1,22 @@
-// For some reason, `new Buffer()` is added to the compiled code by ncc.
-// This triggers the warning "DeprecationWarning: Buffer() is deprecated due to security and usability issues."
-// Until it is fixed in ncc, we workaround by suppressing the warning.
+// Suppress all warnings
 process.removeAllListeners('warning');
+
+const fs = require('fs');
+
+function writeStdoutSync(text) {
+  fs.writeSync(process.stdout.fd, text);
+}
+
+function writeStderrSync(text) {
+  fs.writeSync(process.stderr.fd, text);
+}
 
 const argv = require('minimist')(process.argv.slice(2), {
   boolean: ['help', 'version', 'check', 'buffer-stdout']
 });
 
 if (argv._.length == 0 || argv.help) {
-  console.log(`Usage: scratch-run project-file [OPTIONS]
+  writeStdoutSync(`Usage: scratch-run project-file [OPTIONS]
 Options:
   --help                  print this message
   --version               print the version
@@ -18,7 +26,12 @@ Options:
   process.exit(0);
 }
 
-const fs = require('fs');
+if (argv.version) {
+  const { version } = require('../package.json');
+  writeStdoutSync(version + '\n');
+  process.exit(0);
+}
+
 const scratchVM = require('scratch-vm');
 const Kattio = require('./kattio');
 
@@ -26,19 +39,13 @@ const Kattio = require('./kattio');
 const minilog = require('minilog');
 minilog.disable();
 
-if (argv.version) {
-  const { version } = require('../package.json');
-  process.stdout.write(version + '\n');
-  process.exit(0);
-}
-
 function check_scratch_file(filename) {
   const vm = new scratchVM();
 
   // Block loading extensions (e.g., music)
   vm.extensionManager.loadExtensionIdSync =
     vm.extensionManager.loadExtensionURL = (id) => {
-      process.stderr.write(
+      writeStderrSync(
         'Not a valid Scratch file: Can not use extension ' + id + '\n'
       );
       process.exit(1);
@@ -46,7 +53,7 @@ function check_scratch_file(filename) {
 
   fs.readFile(filename, function (err, data) {
     if (err) {
-      process.stderr.write(err + '\n');
+      writeStderrSync(err + '\n');
       process.exit(1);
     }
 
@@ -55,7 +62,7 @@ function check_scratch_file(filename) {
         process.exit(0);
       })
       .catch(function (err) {
-        process.stderr.write('Not a valid Scratch file: ' + err + '\n');
+        writeStderrSync('Not a valid Scratch file: ' + err + '\n');
         process.exit(1);
       });
   });
@@ -75,7 +82,7 @@ function run_scratch_file(filename) {
   // Block loading extensions (e.g., music)
   vm.extensionManager.loadExtensionIdSync =
     vm.extensionManager.loadExtensionURL = (id) => {
-      process.stderr.write(
+      writeStderrSync(
         'scratch-vm encountered an error: Can not use extension ' + id + '\n'
       );
       process.exit(1);
@@ -105,13 +112,13 @@ function run_scratch_file(filename) {
   });
 
   vm.runtime.on('PROJECT_RUN_STOP', function () {
-    process.stdout.write(stdoutBuffer);
-    process.exit(0);
+    vm.runtime.quit();
+    process.stdout.write(stdoutBuffer, () => process.exit(0));
   });
 
   fs.readFile(filename, function (err, data) {
     if (err) {
-      process.stderr.write(err + '\n');
+      writeStderrSync(err + '\n');
       process.exit(1);
     }
 
@@ -127,7 +134,7 @@ function run_scratch_file(filename) {
         vm.greenFlag();
       })
       .catch(function (err) {
-        process.stderr.write('scratch-vm encountered an error: ' + err + '\n');
+        writeStderrSync('scratch-vm encountered an error: ' + err + '\n');
         process.exit(1);
       });
   });
