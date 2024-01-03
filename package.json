@@ -23,6 +23,7 @@
   "homepage": "https://github.com/VNOI-Admin/scratch-run#readme",
   "dependencies": {
     "fastestsmallesttextencoderdecoder": "^1.0.22",
+    "minimist": "^1.2.8",
     "scratch-vm": "git+https://github.com/TurboWarp/scratch-vm.git#develop"
   },
   "devDependencies": {
