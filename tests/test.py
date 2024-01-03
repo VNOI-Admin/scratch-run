@@ -10,11 +10,11 @@ os.chdir(__DIR__)
 def get_executable():
     arch = 'arm64' if platform.machine() == 'aarch64' else 'amd64'
     if platform.system() == 'Linux':
-        return f'../build/linux-{arch}/scratch-run'
+        return f'../bin/linux-{arch}/scratch-run'
     elif platform.system() == 'Darwin':
-        return f'../build/macos-{arch}/scratch-run'
+        return f'../bin/macos-{arch}/scratch-run'
     elif platform.system() == 'Windows':
-        return f'../build/win-{arch}/scratch-run'
+        return f'../bin/win-{arch}/scratch-run'
     else:
         raise RuntimeError('Unsupported platform: {}'.format(platform.system()))
 
@@ -97,7 +97,7 @@ class TestScratchRun(unittest.TestCase):
 
         self.assertEqual(proc.returncode, 1)
         self.assertEqual(stdout, b'')
-        self.assertEqual(stderr, b'scratch-vm encountered an error: Error: Non-ascii character in FixedAsciiString\n')
+        self.assertEqual(stderr, b'scratch-vm encountered an error: SyntaxError: Unexpected end of JSON input\n')
 
     def test_check_invalid_file(self):
         proc = Popen([self.executable, '--check', 'invalid.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
@@ -105,7 +105,7 @@ class TestScratchRun(unittest.TestCase):
 
         self.assertEqual(proc.returncode, 1)
         self.assertEqual(stdout, b'')
-        self.assertEqual(stderr, b'Not a valid Scratch file: Error: Non-ascii character in FixedAsciiString\n')
+        self.assertEqual(stderr, b'Not a valid Scratch file: SyntaxError: Unexpected end of JSON input\n')
 
     def test_music_extension(self):
         proc = Popen([self.executable, 'music_extension.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)

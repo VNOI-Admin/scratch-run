@@ -3,12 +3,17 @@
 NODE_VERSION=16.16.0
 
 VERSION=$(node -p -e "require('./package.json').version")
-BUILD_CMD="npx pkg index.js --no-bytecode --public-packages \"*\" --public"
+BUILD_CMD="npx pkg ../dist/index.js"
 
-rm -rf build && mkdir build && cd build
+rm -rf bin dist
+npx webpack
 
-npx ncc build ../index.js --minify --out .
-echo "(()=>require(\"text-encoding\"))();" >> index.js # Hack to force inclusion of text-encoding
+TEXT_ENCODING_FIND="function(module,exports){eval('module.exports = require(\"text-encoding\")"
+TEXT_ENCODING_REPL="function(module,exports,__webpack_require__){eval('module.exports = __webpack_require__(\"text-encoding\")"
+sed -i s/"$TEXT_ENCODING_FIND"/"$TEXT_ENCODING_REPL"/g dist/index.js
+
+mkdir bin
+cd bin
 
 # Linux amd64
 $BUILD_CMD -t node"$NODE_VERSION"-linux-x64 --out-path linux-amd64

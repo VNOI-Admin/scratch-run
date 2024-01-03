@@ -17,23 +17,22 @@ if (process.argv.length < 3) {
 }
 
 if (process.argv[2] === '--version') {
-  const { version } = require('./package.json');
+  const { version } = require('../package.json');
   process.stdout.write(version + '\n');
   process.exit(0);
 }
 
 function check_scratch_file(filename) {
   const vm = new scratchVM();
-  vm.start();
-  vm.setTurboMode(true);
 
   // Block loading extensions (e.g., music)
-  vm.extensionManager.loadExtensionURL = (id) => {
-    process.stderr.write(
-      'Not a valid Scratch file: Can not use extension ' + id + '\n'
-    );
-    process.exit(1);
-  };
+  vm.extensionManager.loadExtensionIdSync =
+    vm.extensionManager.loadExtensionURL = (id) => {
+      process.stderr.write(
+        'Not a valid Scratch file: Can not use extension ' + id + '\n'
+      );
+      process.exit(1);
+    };
 
   fs.readFile(filename, function (err, data) {
     if (err) {
@@ -114,12 +113,13 @@ function run_scratch_file(filename) {
   };
 
   // Block loading extensions (e.g., music)
-  vm.extensionManager.loadExtensionURL = (id) => {
-    process.stderr.write(
-      'scratch-vm encountered an error: Can not use extension ' + id + '\n'
-    );
-    process.exit(1);
-  };
+  vm.extensionManager.loadExtensionIdSync =
+    vm.extensionManager.loadExtensionURL = (id) => {
+      process.stderr.write(
+        'scratch-vm encountered an error: Can not use extension ' + id + '\n'
+      );
+      process.exit(1);
+    };
 
   function is_space(c) {
     // based on regex \s
@@ -169,9 +169,6 @@ function run_scratch_file(filename) {
     }
   }
 
-  vm.start();
-  vm.setTurboMode(true);
-
   vm.runtime.on('SAY', function (target, type, text) {
     text = text.toString();
     if (type === 'say') {
@@ -189,6 +186,10 @@ function run_scratch_file(filename) {
     }
   });
 
+  vm.runtime.on('PROJECT_RUN_STOP', function () {
+    process.exit(0);
+  });
+
   fs.readFile(filename, function (err, data) {
     if (err) {
       process.stderr.write(err + '\n');
@@ -197,15 +198,14 @@ function run_scratch_file(filename) {
 
     vm.loadProject(data)
       .then(() => {
-        for (let i = 0; i < vm.runtime.targets.length; i++) {
-          vm.runtime.targets[i].visible = false;
+        for (const target of vm.runtime.targets) {
+          target.setVisible(false);
         }
-
+        vm.convertToPackagedRuntime();
+        vm.setTurboMode(true);
+        vm.setFramerate(250);
+        vm.start();
         vm.greenFlag();
-
-        vm.runtime.on('PROJECT_RUN_STOP', function () {
-          process.exit(0);
-        });
       })
       .catch(function (err) {
         process.stderr.write('scratch-vm encountered an error: ' + err + '\n');

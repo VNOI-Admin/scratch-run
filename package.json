@@ -22,10 +22,18 @@
   },
   "homepage": "https://github.com/VNOI-Admin/scratch-run#readme",
   "dependencies": {
-    "scratch-vm": "1.0.7"
+    "fastestsmallesttextencoderdecoder": "^1.0.22",
+    "scratch-vm": "git+https://github.com/TurboWarp/scratch-vm.git#develop"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.34.0",
-    "pkg": "^5.8.0"
+    "esbuild-loader": "^4.0.2",
+    "pkg": "^5.8.1",
+    "webpack": "4.47.0",
+    "webpack-cli": "4.10.0"
+  },
+  "overrides": {
+    "webpack@4.47.0": {
+      "terser-webpack-plugin": "^4.2.3"
+    }
   }
 }
