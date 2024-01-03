@@ -32,7 +32,10 @@ const Kattio = {
 
   _readUntil: function (stop) {
     this._ensure();
-    if (this._bufPos === this._bufLen) throw new Error('eof');
+    if (this._bufPos === this._bufLen) {
+      throw new Error('End of file reached');
+    }
+
     var start = this._bufPos;
     var before = null;
     for (;;) {
@@ -51,7 +54,9 @@ const Kattio = {
       if (this._bufPos === this._bufLen || stop(this._buf[this._bufPos])) break;
       this._bufPos++;
     }
-    if (!before) return this._buf.toString('utf8', start, this._bufPos);
+    if (!before) {
+      return this._buf.toString('utf8', start, this._bufPos);
+    }
     var after = this._buf.slice(start, this._bufPos);
     var res = Buffer.alloc(before.length + after.length);
     before.copy(res);

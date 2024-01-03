@@ -102,12 +102,21 @@ function run_scratch_file(filename) {
   }
 
   vm.runtime.on('QUESTION', function (question) {
-    if (question !== null) {
-      if (question === 'read_token') {
-        vm.runtime.emit('ANSWER', Kattio.nextToken());
-      } else {
-        vm.runtime.emit('ANSWER', Kattio.nextLine());
+    try {
+      if (question !== null) {
+        if (question === 'read_token') {
+          vm.runtime.emit('ANSWER', Kattio.nextToken());
+        } else {
+          vm.runtime.emit('ANSWER', Kattio.nextLine());
+        }
       }
+    } catch (e) {
+      writeStderrSync(
+        'scratch-vm encountered an error: Could not read input: ' +
+          e.message +
+          '\n'
+      );
+      process.exit(1);
     }
   });
 
