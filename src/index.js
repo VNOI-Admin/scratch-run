@@ -35,10 +35,6 @@ if (argv.version) {
 const scratchVM = require('scratch-vm');
 const Kattio = require('./kattio');
 
-// Disable vm logging. Need to be done after importing scratch-vm.
-const minilog = require('minilog');
-minilog.disable();
-
 function check_scratch_file(filename) {
   const vm = new scratchVM();
 
