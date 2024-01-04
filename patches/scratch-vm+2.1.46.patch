@@ -1,0 +1,42 @@
+diff --git a/node_modules/scratch-vm/src/blocks/scratch3_looks.js b/node_modules/scratch-vm/src/blocks/scratch3_looks.js
+index e84e0f8..493e149 100644
+--- a/node_modules/scratch-vm/src/blocks/scratch3_looks.js
++++ b/node_modules/scratch-vm/src/blocks/scratch3_looks.js
+@@ -337,18 +337,6 @@ class Scratch3LooksBlocks {
+ 
+     sayforsecs (args, util) {
+         this.say(args, util);
+-        const target = util.target;
+-        const usageId = this._getBubbleState(target).usageId;
+-        return new Promise(resolve => {
+-            this._bubbleTimeout = setTimeout(() => {
+-                this._bubbleTimeout = null;
+-                // Clear say bubble if it hasn't been changed and proceed.
+-                if (this._getBubbleState(target).usageId === usageId) {
+-                    this._updateBubble(target, 'say', '');
+-                }
+-                resolve();
+-            }, 1000 * args.SECS);
+-        });
+     }
+ 
+     think (args, util) {
+@@ -357,18 +345,6 @@ class Scratch3LooksBlocks {
+ 
+     thinkforsecs (args, util) {
+         this.think(args, util);
+-        const target = util.target;
+-        const usageId = this._getBubbleState(target).usageId;
+-        return new Promise(resolve => {
+-            this._bubbleTimeout = setTimeout(() => {
+-                this._bubbleTimeout = null;
+-                // Clear think bubble if it hasn't been changed and proceed.
+-                if (this._getBubbleState(target).usageId === usageId) {
+-                    this._updateBubble(target, 'think', '');
+-                }
+-                resolve();
+-            }, 1000 * args.SECS);
+-        });
+     }
+ 
+     show (args, util) {

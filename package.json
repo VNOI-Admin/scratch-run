@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "esbuild-loader": "^4.0.2",
+    "patch-package": "^8.0.0",
     "pkg": "^5.8.1",
     "webpack": "4.47.0",
     "webpack-bundle-analyzer": "^4.10.1",
