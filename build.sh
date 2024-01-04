@@ -8,10 +8,6 @@ BUILD_CMD="npx pkg ../dist/index.js"
 rm -rf bin dist
 npx webpack
 
-TEXT_ENCODING_FIND="function(module,exports){eval('module.exports = require(\"text-encoding\")"
-TEXT_ENCODING_REPL="function(module,exports,__webpack_require__){eval('module.exports = __webpack_require__(\"text-encoding\")"
-sed -i s/"$TEXT_ENCODING_FIND"/"$TEXT_ENCODING_REPL"/g dist/index.js
-
 mkdir bin
 cd bin
 
