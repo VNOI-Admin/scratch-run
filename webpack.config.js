@@ -23,6 +23,14 @@ module.exports = {
         'text-encoding'
       ),
 
+      // Force webpack to rebuild scratch-sb1-converter
+      'scratch-sb1-converter$': path.resolve(
+        __dirname,
+        'node_modules',
+        'scratch-sb1-converter',
+        'index.js'
+      ),
+
       // Remove dead modules
       htmlparser2$: noop_module_path,
       'canvas-toBlob$': noop_module_path,
