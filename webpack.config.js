@@ -1,6 +1,7 @@
 const webpack = require('webpack');
+const BundleAnalyzerPlugin =
+  require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const path = require('path');
-const dist = path.resolve(__dirname, 'dist');
 
 const noop_module_path = path.resolve(__dirname, 'src', 'build', 'noop-module');
 
@@ -10,7 +11,7 @@ module.exports = {
   target: 'node',
   output: {
     filename: 'index.js',
-    path: dist
+    path: path.resolve(__dirname, 'dist')
   },
   entry: './src/index.js',
   resolve: {
@@ -85,7 +86,12 @@ module.exports = {
     new webpack.NormalModuleReplacementPlugin(
       /\.\/tw-font-manager$/,
       '/src/build/scratch-vm/engine/tw-font-manager'
-    )
+    ),
+
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'static',
+      openAnalyzer: false
+    })
   ],
   module: {
     rules: [
