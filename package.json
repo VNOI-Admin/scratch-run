@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node ./index.js",
     "build": "./build.sh",
-    "test": "python tests/test.py"
+    "test": "python tests/test.py",
+    "postinstall": "patch-package"
   },
   "repository": {
     "type": "git",
