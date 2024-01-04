@@ -32,6 +32,9 @@ module.exports = {
         'index.js'
       ),
 
+      // Replace with dummy module
+      immutable: path.resolve(__dirname, 'src', 'build', 'immutable'),
+
       // Remove dead modules
       htmlparser2$: noop_module_path,
       'canvas-toBlob$': noop_module_path,
