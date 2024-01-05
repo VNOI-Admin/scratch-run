@@ -25,7 +25,7 @@
   "dependencies": {
     "fastestsmallesttextencoderdecoder": "^1.0.22",
     "minimist": "^1.2.8",
-    "scratch-vm": "git+https://github.com/TurboWarp/scratch-vm.git#develop"
+    "scratch-vm": "git+https://github.com/TurboWarp/scratch-vm.git#e4e461ac84b1d61a3e7468aa6dbc8b56a2ece35e"
   },
   "devDependencies": {
     "esbuild-loader": "^4.0.2",
