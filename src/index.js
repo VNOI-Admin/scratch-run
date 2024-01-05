@@ -70,7 +70,7 @@ function run_scratch_file(filename) {
   // Hack to speeding up vm.runtime._step calls
   const real_step = vm.runtime._step.bind(vm.runtime);
   vm.runtime._step = () => {
-    for (let loop_count = 0; loop_count < 5000; ++loop_count) {
+    for (let loop_count = 0; loop_count < 4000; ++loop_count) {
       setImmediate(real_step);
     }
   };
