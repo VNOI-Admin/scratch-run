@@ -1,5 +1,9 @@
 # scratch-run changelog
 
+### v0.1.1
+
+- Fix `--version` not printing version
+
 ### v0.1.0
 
 - Add argument `--buffer-stdout`

@@ -15,6 +15,12 @@ const argv = require('minimist')(process.argv.slice(2), {
   boolean: ['help', 'version', 'check', 'buffer-stdout']
 });
 
+if (argv.version) {
+  const { version } = require('../package.json');
+  writeStdoutSync(version + '\n');
+  process.exit(0);
+}
+
 if (argv._.length == 0 || argv.help) {
   writeStdoutSync(`Usage: scratch-run project-file [OPTIONS]
 Options:
@@ -23,12 +29,6 @@ Options:
   --check                 validate project file
   --buffer-stdout         buffer stdout for better performance
 `);
-  process.exit(0);
-}
-
-if (argv.version) {
-  const { version } = require('../package.json');
-  writeStdoutSync(version + '\n');
   process.exit(0);
 }
 
