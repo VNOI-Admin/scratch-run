@@ -50,7 +50,39 @@ class TestScratchRun(unittest.TestCase):
         self.assertEqual(stdout, test_message)
         self.assertEqual(stderr, b'')
 
-    def test_aplusb_token(self):
+    def test_aplusb_sb_token(self):
+        proc = Popen([self.executable, 'aplusb.sb'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = proc.communicate(b'123 456\n')
+
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(stdout, b'579\n')
+        self.assertEqual(stderr, b'')
+
+    def test_aplusb_sb_line(self):
+        proc = Popen([self.executable, 'aplusb.sb'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = proc.communicate(b'123\n456\n')
+
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(stdout, b'579\n')
+        self.assertEqual(stderr, b'')
+
+    def test_aplusb_sb2_token(self):
+        proc = Popen([self.executable, 'aplusb.sb2'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = proc.communicate(b'123 456\n')
+
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(stdout, b'579\n')
+        self.assertEqual(stderr, b'')
+
+    def test_aplusb_sb2_line(self):
+        proc = Popen([self.executable, 'aplusb.sb2'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = proc.communicate(b'123\n456\n')
+
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(stdout, b'579\n')
+        self.assertEqual(stderr, b'')
+
+    def test_aplusb_sb3_token(self):
         proc = Popen([self.executable, 'aplusb.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         stdout, stderr = proc.communicate(b'123 456\n')
 
@@ -58,7 +90,7 @@ class TestScratchRun(unittest.TestCase):
         self.assertEqual(stdout, b'579\n')
         self.assertEqual(stderr, b'')
 
-    def test_aplusb_line(self):
+    def test_aplusb_sb3_line(self):
         proc = Popen([self.executable, 'aplusb.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         stdout, stderr = proc.communicate(b'123\n456\n')
 
