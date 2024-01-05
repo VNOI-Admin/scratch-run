@@ -1,0 +1,257 @@
+diff --git a/node_modules/scratch-vm/src/blocks/scratch3_looks.js b/node_modules/scratch-vm/src/blocks/scratch3_looks.js
+index e84e0f8..214e1b4 100644
+--- a/node_modules/scratch-vm/src/blocks/scratch3_looks.js
++++ b/node_modules/scratch-vm/src/blocks/scratch3_looks.js
+@@ -336,7 +336,7 @@ class Scratch3LooksBlocks {
+     }
+ 
+     sayforsecs (args, util) {
+-        this.say(args, util);
++        return this.say(args, util);
+         const target = util.target;
+         const usageId = this._getBubbleState(target).usageId;
+         return new Promise(resolve => {
+diff --git a/node_modules/scratch-vm/src/engine/blocks.js b/node_modules/scratch-vm/src/engine/blocks.js
+index 71ace3a..4bbcad4 100644
+--- a/node_modules/scratch-vm/src/engine/blocks.js
++++ b/node_modules/scratch-vm/src/engine/blocks.js
+@@ -1,9 +1,9 @@
+ const adapter = require('./adapter');
+ const mutationAdapter = require('./mutation-adapter');
+ const xmlEscape = require('../util/xml-escape');
+-const MonitorRecord = require('./monitor-record');
++// const MonitorRecord = require('./monitor-record');
+ const Clone = require('../util/clone');
+-const {Map} = require('immutable');
++// const {Map} = require('immutable');
+ const BlocksExecuteCache = require('./blocks-execute-cache');
+ const BlocksRuntimeCache = require('./blocks-runtime-cache');
+ const log = require('../util/log');
+@@ -709,8 +709,8 @@ class Blocks {
+                     this.runtime.requestBlocksUpdate();
+                 }
+ 
+-                const flyoutBlock = block.shadow && block.parent ? this._blocks[block.parent] : block;
+-                if (flyoutBlock.isMonitored) {
++                // const flyoutBlock = block.shadow && block.parent ? this._blocks[block.parent] : block;
++                if (false && flyoutBlock.isMonitored) {
+                     this.runtime.requestUpdateMonitor(Map({
+                         id: flyoutBlock.id,
+                         params: this._getBlockParams(flyoutBlock)
+@@ -768,9 +768,9 @@ class Blocks {
+                 block.targetId = null;
+             }
+ 
+-            if (wasMonitored && !block.isMonitored) {
++            if (false && wasMonitored && !block.isMonitored) {
+                 this.runtime.requestHideMonitor(block.id);
+-            } else if (!wasMonitored && block.isMonitored) {
++            } else if (false && !wasMonitored && block.isMonitored) {
+                 // Tries to show the monitor for specified block. If it doesn't exist, add the monitor.
+                 if (!this.runtime.requestShowMonitor(block.id)) {
+                     this.runtime.requestAddMonitor(MonitorRecord({
+diff --git a/node_modules/scratch-vm/src/engine/execute.js b/node_modules/scratch-vm/src/engine/execute.js
+index 7e94ee9..4082784 100644
+--- a/node_modules/scratch-vm/src/engine/execute.js
++++ b/node_modules/scratch-vm/src/engine/execute.js
+@@ -2,7 +2,7 @@ const BlockUtility = require('./block-utility');
+ const BlocksExecuteCache = require('./blocks-execute-cache');
+ const log = require('../util/log');
+ const Thread = require('./thread');
+-const {Map} = require('immutable');
++// const {Map} = require('immutable');
+ const cast = require('../util/cast');
+ 
+ /**
+@@ -100,7 +100,7 @@ const handleReport = function (resolvedValue, sequencer, thread, blockCached, la
+                     // Target no longer exists
+                     return;
+                 }
+-                sequencer.runtime.requestUpdateMonitor(Map({
++                if (false) sequencer.runtime.requestUpdateMonitor(Map({
+                     id: currentBlockId,
+                     spriteName: targetId ? sequencer.runtime.getTargetById(targetId).getName() : null,
+                     value: resolvedValue
+diff --git a/node_modules/scratch-vm/src/engine/runtime.js b/node_modules/scratch-vm/src/engine/runtime.js
+index 6cfe302..dc0ee7e 100644
+--- a/node_modules/scratch-vm/src/engine/runtime.js
++++ b/node_modules/scratch-vm/src/engine/runtime.js
+@@ -1,5 +1,5 @@
+ const EventEmitter = require('events');
+-const {OrderedMap} = require('immutable');
++// const {OrderedMap} = require('immutable');
+ const ExtendedJSON = require('@turbowarp/json');
+ const uuid = require('uuid');
+ 
+@@ -320,12 +320,12 @@ class Runtime extends EventEmitter {
+         /**
+          * Ordered map of all monitors, which are MonitorReporter objects.
+          */
+-        this._monitorState = OrderedMap({});
++        // this._monitorState = OrderedMap({});
+ 
+         /**
+          * Monitor state from last tick
+          */
+-        this._prevMonitorState = OrderedMap({});
++        // this._prevMonitorState = OrderedMap({});
+ 
+         /**
+          * Whether the project is in "turbo mode."
+@@ -2247,8 +2247,8 @@ class Runtime extends EventEmitter {
+         this.targets.map(this.disposeTarget, this);
+         this.extensionStorage = {};
+         // tw: explicitly emit a MONITORS_UPDATE instead of relying on implicit behavior of _step()
+-        const emptyMonitorState = OrderedMap({});
+-        if (!emptyMonitorState.equals(this._monitorState)) {
++        // const emptyMonitorState = OrderedMap({});
++        if (false && !emptyMonitorState.equals(this._monitorState)) {
+             this._monitorState = emptyMonitorState;
+             this.emit(Runtime.MONITORS_UPDATE, this._monitorState);
+         }
+@@ -2494,7 +2494,7 @@ class Runtime extends EventEmitter {
+             }
+         }
+         this.redrawRequested = false;
+-        this._pushMonitors();
++        // this._pushMonitors();
+         if (this.profiler !== null) {
+             if (stepThreadsProfilerId === -1) {
+                 stepThreadsProfilerId = this.profiler.idByName('Sequencer.stepThreads');
+@@ -2540,7 +2540,7 @@ class Runtime extends EventEmitter {
+             this._refreshTargets = false;
+         }
+ 
+-        if (!this._prevMonitorState.equals(this._monitorState)) {
++        if (false && !this._prevMonitorState.equals(this._monitorState)) {
+             this.emit(Runtime.MONITORS_UPDATE, this._monitorState);
+             this._prevMonitorState = this._monitorState;
+         }
+@@ -2662,10 +2662,10 @@ class Runtime extends EventEmitter {
+         width = Math.round(Math.max(1, width));
+         height = Math.round(Math.max(1, height));
+         if (this.stageWidth !== width || this.stageHeight !== height) {
+-            const deltaX = width - this.stageWidth;
+-            const deltaY = height - this.stageHeight;
++            // const deltaX = width - this.stageWidth;
++            // const deltaY = height - this.stageHeight;
+             // Preserve monitor location relative to the center of the stage
+-            if (this._monitorState.size > 0) {
++            if (false && this._monitorState.size > 0) {
+                 const offsetX = deltaX / 2;
+                 const offsetY = deltaY / 2;
+                 for (const monitor of this._monitorState.valueSeq()) {
+@@ -3053,6 +3053,7 @@ class Runtime extends EventEmitter {
+      * @param {!MonitorRecord} monitor Monitor to add.
+      */
+     requestAddMonitor (monitor) {
++        return;
+         const id = monitor.get('id');
+         if (!this.requestUpdateMonitor(monitor)) { // update monitor if it exists in the state
+             // if the monitor did not exist in the state, add it
+@@ -3068,6 +3069,7 @@ class Runtime extends EventEmitter {
+      * @return {boolean} true if monitor exists in the state and was updated, false if it did not exist.
+      */
+     requestUpdateMonitor (monitor) {
++        return true;
+         const id = monitor.get('id');
+         if (this._monitorState.has(id)) {
+             this._monitorState =
+@@ -3089,6 +3091,7 @@ class Runtime extends EventEmitter {
+      * @param {!string} monitorId ID of the monitor to remove.
+      */
+     requestRemoveMonitor (monitorId) {
++        return;
+         this._monitorState = this._monitorState.delete(monitorId);
+     }
+ 
+@@ -3098,6 +3101,7 @@ class Runtime extends EventEmitter {
+      * @return {boolean} true if monitor exists and was updated, false otherwise
+      */
+     requestHideMonitor (monitorId) {
++        return true;
+         return this.requestUpdateMonitor(new Map([
+             ['id', monitorId],
+             ['visible', false]
+@@ -3111,6 +3115,7 @@ class Runtime extends EventEmitter {
+      * @return {boolean} true if monitor exists and was updated, false otherwise
+      */
+     requestShowMonitor (monitorId) {
++        return true;
+         return this.requestUpdateMonitor(new Map([
+             ['id', monitorId],
+             ['visible', true]
+@@ -3123,6 +3128,7 @@ class Runtime extends EventEmitter {
+      * @param {!string} targetId Remove all monitors with given target ID.
+      */
+     requestRemoveMonitorByTargetId (targetId) {
++        return;
+         this._monitorState = this._monitorState.filterNot(value => value.targetId === targetId);
+     }
+ 
+diff --git a/node_modules/scratch-vm/src/engine/target.js b/node_modules/scratch-vm/src/engine/target.js
+index e9cecfe..ef24579 100644
+--- a/node_modules/scratch-vm/src/engine/target.js
++++ b/node_modules/scratch-vm/src/engine/target.js
+@@ -4,7 +4,7 @@ const Blocks = require('./blocks');
+ const Variable = require('../engine/variable');
+ const Comment = require('../engine/comment');
+ const uid = require('../util/uid');
+-const {Map} = require('immutable');
++// const {Map} = require('immutable');
+ const log = require('../util/log');
+ const StringUtil = require('../util/string-util');
+ const VariableUtil = require('../util/variable-util');
+@@ -350,8 +350,8 @@ class Target extends EventEmitter {
+                         name: variable.type === Variable.LIST_TYPE ? 'LIST' : 'VARIABLE',
+                         value: id
+                     }, this.runtime);
+-                    const monitorBlock = blocks.getBlock(variable.id);
+-                    if (monitorBlock) {
++                    // const monitorBlock = blocks.getBlock(variable.id + 'lebaohiep');
++                    if (false && monitorBlock) {
+                         this.runtime.requestUpdateMonitor(Map({
+                             id: id,
+                             params: blocks._getBlockParams(monitorBlock)
+diff --git a/node_modules/scratch-vm/src/serialization/sb2.js b/node_modules/scratch-vm/src/serialization/sb2.js
+index 6dc9cef..26e97f9 100644
+--- a/node_modules/scratch-vm/src/serialization/sb2.js
++++ b/node_modules/scratch-vm/src/serialization/sb2.js
+@@ -16,7 +16,7 @@ const MathUtil = require('../util/math-util');
+ const specMap = require('./sb2_specmap');
+ const Comment = require('../engine/comment');
+ const Variable = require('../engine/variable');
+-const MonitorRecord = require('../engine/monitor-record');
++// const MonitorRecord = require('../engine/monitor-record');
+ const StageLayering = require('../engine/stage-layering');
+ const ScratchXUtilities = require('../extension-support/tw-scratchx-utilities');
+ 
+@@ -300,6 +300,7 @@ const globalBroadcastMsgStateGenerator = (function () {
+  */
+ 
+ const parseMonitorObject = (object, runtime, targets, extensions) => {
++    return;
+     // If we can't find the block in the spec map, ignore it.
+     // This happens for things like Lego Wedo 1.0 monitors.
+     const mapped = specMap[object.cmd];
+diff --git a/node_modules/scratch-vm/src/serialization/sb3.js b/node_modules/scratch-vm/src/serialization/sb3.js
+index b760e05..aa76a63 100644
+--- a/node_modules/scratch-vm/src/serialization/sb3.js
++++ b/node_modules/scratch-vm/src/serialization/sb3.js
+@@ -8,7 +8,7 @@ const Blocks = require('../engine/blocks');
+ const Sprite = require('../sprites/sprite');
+ const Variable = require('../engine/variable');
+ const Comment = require('../engine/comment');
+-const MonitorRecord = require('../engine/monitor-record');
++// const MonitorRecord = require('../engine/monitor-record');
+ const StageLayering = require('../engine/stage-layering');
+ const log = require('../util/log');
+ const uid = require('../util/uid');
+@@ -1324,6 +1324,7 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
+ };
+ 
+ const deserializeMonitor = function (monitorData, runtime, targets, extensions) {
++    return;
+     // Monitors position is always stored as position from top-left corner in 480x360 stage.
+     const xOffset = (runtime.stageWidth - 480) / 2;
+     const yOffset = (runtime.stageHeight - 360) / 2;
