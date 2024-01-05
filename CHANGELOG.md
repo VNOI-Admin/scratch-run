@@ -1,5 +1,14 @@
 # scratch-run changelog
 
+### v0.1.0
+
+- Add argument `--buffer-stdout`
+- Use [TurboWarp/scratch-vm](https://github.com/TurboWarp/scratch-vm)
+- Patch `scratch-vm` to remove unused functionality
+- Significantly reduce bundle size
+
+As a result, `scratch-run` nows runs much faster while consuming less memory.
+
 ### v0.0.11
 
 - Use Node 16.16.0
