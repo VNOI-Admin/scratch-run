@@ -37,6 +37,7 @@ const Kattio = require('./kattio');
 
 function check_scratch_file(filename) {
   const vm = new scratchVM();
+  vm.convertToPackagedRuntime();
 
   // Block loading extensions (e.g., music)
   vm.extensionManager.loadExtensionIdSync =
@@ -66,14 +67,7 @@ function check_scratch_file(filename) {
 
 function run_scratch_file(filename) {
   const vm = new scratchVM();
-
-  // Hack to speeding up vm.runtime._step calls
-  const real_step = vm.runtime._step.bind(vm.runtime);
-  vm.runtime._step = () => {
-    for (let loop_count = 0; loop_count < 4000; ++loop_count) {
-      setImmediate(real_step);
-    }
-  };
+  vm.convertToPackagedRuntime();
 
   // Block loading extensions (e.g., music)
   vm.extensionManager.loadExtensionIdSync =
@@ -84,27 +78,29 @@ function run_scratch_file(filename) {
       process.exit(1);
     };
 
+  // _scratch_run_* are called from the generated code by scratch-vm's compiler
   let stdoutBuffer = '';
   if (argv['buffer-stdout']) {
-    vm.runtime.on('SAY', function (target, type, text) {
-      text = text.toString() + (type === 'say' ? '\n' : '');
+    vm.runtime._scratch_run_say = function (text) {
+      stdoutBuffer += text + '\n';
+    };
+    vm.runtime._scratch_run_think = function (text) {
       stdoutBuffer += text;
-    });
+    };
   } else {
-    vm.runtime.on('SAY', function (target, type, text) {
-      text = text.toString() + (type === 'say' ? '\n' : '');
+    vm.runtime._scratch_run_say = function (text) {
+      process.stdout.write(text + '\n');
+    };
+    vm.runtime._scratch_run_think = function (text) {
       process.stdout.write(text);
-    });
+    };
   }
-
-  vm.runtime.on('QUESTION', function (question) {
+  vm.runtime._scratch_run_ask = function (question) {
     try {
-      if (question !== null) {
-        if (question === 'read_token') {
-          vm.runtime.emit('ANSWER', Kattio.nextToken());
-        } else {
-          vm.runtime.emit('ANSWER', Kattio.nextLine());
-        }
+      if (question === 'read_token') {
+        return Kattio.nextToken();
+      } else {
+        return Kattio.nextLine();
       }
     } catch (e) {
       writeStderrSync(
@@ -114,7 +110,7 @@ function run_scratch_file(filename) {
       );
       process.exit(1);
     }
-  });
+  };
 
   vm.runtime.on('PROJECT_RUN_STOP', function () {
     vm.runtime.quit();
@@ -132,7 +128,7 @@ function run_scratch_file(filename) {
         for (const target of vm.runtime.targets) {
           target.setVisible(false);
         }
-        vm.convertToPackagedRuntime();
+        vm.runtime.precompile();
         vm.setTurboMode(true);
         vm.setFramerate(250);
         vm.start();

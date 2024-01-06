@@ -1,18 +1,128 @@
-diff --git a/node_modules/scratch-vm/src/blocks/scratch3_looks.js b/node_modules/scratch-vm/src/blocks/scratch3_looks.js
-index e84e0f8..214e1b4 100644
---- a/node_modules/scratch-vm/src/blocks/scratch3_looks.js
-+++ b/node_modules/scratch-vm/src/blocks/scratch3_looks.js
-@@ -336,7 +336,7 @@ class Scratch3LooksBlocks {
-     }
+diff --git a/node_modules/scratch-vm/src/compiler/compat-blocks.js b/node_modules/scratch-vm/src/compiler/compat-blocks.js
+index 1c9d8f5..67f2221 100644
+--- a/node_modules/scratch-vm/src/compiler/compat-blocks.js
++++ b/node_modules/scratch-vm/src/compiler/compat-blocks.js
+@@ -8,12 +8,8 @@
+ const stacked = [
+     'looks_changestretchby',
+     'looks_hideallsprites',
+-    'looks_say',
+-    'looks_sayforsecs',
+     'looks_setstretchto',
+     'looks_switchbackdroptoandwait',
+-    'looks_think',
+-    'looks_thinkforsecs',
+     'motion_align_scene',
+     'motion_glidesecstoxy',
+     'motion_glideto',
+@@ -21,7 +17,6 @@ const stacked = [
+     'motion_pointtowards',
+     'motion_scroll_right',
+     'motion_scroll_up',
+-    'sensing_askandwait',
+     'sensing_setdragmode',
+     'sound_changeeffectby',
+     'sound_changevolumeby',
+diff --git a/node_modules/scratch-vm/src/compiler/irgen.js b/node_modules/scratch-vm/src/compiler/irgen.js
+index c2cf19d..10d3178 100644
+--- a/node_modules/scratch-vm/src/compiler/irgen.js
++++ b/node_modules/scratch-vm/src/compiler/irgen.js
+@@ -1147,6 +1147,26 @@ class ScriptTreeGenerator {
+                 kind: 'timer.reset'
+             };
  
-     sayforsecs (args, util) {
--        this.say(args, util);
-+        return this.say(args, util);
-         const target = util.target;
-         const usageId = this._getBubbleState(target).usageId;
-         return new Promise(resolve => {
++        case 'looks_say':
++        case 'looks_sayforsecs':
++            return {
++                kind: 'looks.say',
++                message: this.descendInputOfBlock(block, 'MESSAGE')
++            }
++
++        case 'looks_think':
++        case 'looks_thinkforsecs':
++            return {
++                kind: 'looks.think',
++                message: this.descendInputOfBlock(block, 'MESSAGE')
++            }
++
++        case 'sensing_askandwait':
++            return {
++                kind: 'sensing.ask',
++                question: this.descendInputOfBlock(block, 'QUESTION')
++            };
++
+         default: {
+             const opcodeFunction = this.runtime.getOpcodeFunction(block.opcode);
+             if (opcodeFunction) {
+diff --git a/node_modules/scratch-vm/src/compiler/jsgen.js b/node_modules/scratch-vm/src/compiler/jsgen.js
+index bf9cbf3..3af8700 100644
+--- a/node_modules/scratch-vm/src/compiler/jsgen.js
++++ b/node_modules/scratch-vm/src/compiler/jsgen.js
+@@ -781,7 +781,7 @@ class JSGenerator {
+                 }
+                 this.source += '}\n'; // close switch
+                 this.source += `if (!${branchVariable}.isLoop) break;\n`;
+-                this.yieldLoop();
++                // this.yieldLoop();
+                 this.source += '}\n'; // close while
+             } else {
+                 throw new Error(`Unknown block type: ${blockType}`);
+@@ -811,7 +811,7 @@ class JSGenerator {
+             this.source += `${index}++; `;
+             this.source += `${this.referenceVariable(node.variable)}.value = ${index};\n`;
+             this.descendStack(node.do, new Frame(true));
+-            this.yieldLoop();
++            // this.yieldLoop();
+             this.source += '}\n';
+             break;
+         }
+@@ -830,7 +830,7 @@ class JSGenerator {
+             const i = this.localVariables.next();
+             this.source += `for (var ${i} = ${this.descendInput(node.times).asNumber()}; ${i} >= 0.5; ${i}--) {\n`;
+             this.descendStack(node.do, new Frame(true));
+-            this.yieldLoop();
++            // this.yieldLoop();
+             this.source += `}\n`;
+             break;
+         }
+@@ -868,11 +868,11 @@ class JSGenerator {
+             this.resetVariableInputs();
+             this.source += `while (${this.descendInput(node.condition).asBoolean()}) {\n`;
+             this.descendStack(node.do, new Frame(true));
+-            if (node.warpTimer) {
+-                this.yieldStuckOrNotWarp();
+-            } else {
+-                this.yieldLoop();
+-            }
++            // if (node.warpTimer) {
++            //     this.yieldStuckOrNotWarp();
++            // } else {
++            //     this.yieldLoop();
++            // }
+             this.source += `}\n`;
+             break;
+ 
+@@ -1167,6 +1167,18 @@ class JSGenerator {
+             break;
+         }
+ 
++        case 'sensing.ask':
++            this.source += `runtime.ext_scratch3_sensing._answer = runtime._scratch_run_ask(${this.descendInput(node.question).asString()});\n`;
++            break;
++
++        case 'looks.say':
++            this.source += `runtime._scratch_run_say(${this.descendInput(node.message).asString()});\n`;
++            break;
++
++        case 'looks.think':
++            this.source += `runtime._scratch_run_think(${this.descendInput(node.message).asString()});\n`;
++            break;
++
+         default:
+             log.warn(`JS: Unknown stacked block: ${node.kind}`, node);
+             throw new Error(`JS: Unknown stacked block: ${node.kind}`);
 diff --git a/node_modules/scratch-vm/src/engine/blocks.js b/node_modules/scratch-vm/src/engine/blocks.js
-index 71ace3a..4bbcad4 100644
+index 71ace3a..7e6357b 100644
 --- a/node_modules/scratch-vm/src/engine/blocks.js
 +++ b/node_modules/scratch-vm/src/engine/blocks.js
 @@ -1,9 +1,9 @@
