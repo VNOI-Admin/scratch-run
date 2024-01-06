@@ -1,5 +1,9 @@
 # scratch-run changelog
 
+### v0.1.2
+
+- Patch compiler to squeeze more performance
+
 ### v0.1.1
 
 - Fix `--version` not printing version
