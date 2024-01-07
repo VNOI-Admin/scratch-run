@@ -1,5 +1,10 @@
 # scratch-run changelog
 
+### v0.1.3
+
+- Fix infinite loop when `control.stopAll` is used
+- Add argument `--print-generated-js` for printing generated JavaScript code
+
 ### v0.1.2
 
 - Patch compiler to squeeze more performance
