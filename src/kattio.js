@@ -57,11 +57,11 @@ const Kattio = {
     if (!before) {
       return this._buf.toString('utf8', start, this._bufPos);
     }
-    var after = this._buf.slice(start, this._bufPos);
+    var after = this._buf.subarray(start, this._bufPos);
     var res = Buffer.alloc(before.length + after.length);
     before.copy(res);
     after.copy(res, before.length);
-    return res.toString();
+    return res.toString('utf8');
   },
 
   nextToken: function () {
