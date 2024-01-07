@@ -12,7 +12,7 @@ function writeStderrSync(text) {
 }
 
 const argv = require('minimist')(process.argv.slice(2), {
-  boolean: ['help', 'version', 'check', 'buffer-stdout']
+  boolean: ['help', 'version', 'check', 'buffer-stdout', 'print-generated-js']
 });
 
 if (argv.version) {
@@ -28,6 +28,7 @@ Options:
   --version               print the version
   --check                 validate project file
   --buffer-stdout         buffer stdout for better performance
+  --print-generated-js    print the generated JavaScript code
 `);
   process.exit(0);
 }
@@ -35,9 +36,11 @@ Options:
 const scratchVM = require('scratch-vm');
 const Kattio = require('./kattio');
 
-function check_scratch_file(filename) {
+function construct_vm() {
   const vm = new scratchVM();
   vm.convertToPackagedRuntime();
+  vm.setTurboMode(true);
+  vm.setFramerate(250);
 
   // Block loading extensions (e.g., music)
   vm.extensionManager.loadExtensionIdSync =
@@ -48,6 +51,11 @@ function check_scratch_file(filename) {
       process.exit(1);
     };
 
+  return vm;
+}
+
+function check_scratch_file(filename) {
+  const vm = construct_vm();
   fs.readFile(filename, function (err, data) {
     if (err) {
       writeStderrSync(err + '\n');
@@ -65,18 +73,52 @@ function check_scratch_file(filename) {
   });
 }
 
-function run_scratch_file(filename) {
-  const vm = new scratchVM();
-  vm.convertToPackagedRuntime();
+function print_generated_js(filename) {
+  const vm = construct_vm();
 
-  // Block loading extensions (e.g., music)
-  vm.extensionManager.loadExtensionIdSync =
-    vm.extensionManager.loadExtensionURL = (id) => {
-      writeStderrSync(
-        'scratch-vm encountered an error: Can not use extension ' + id + '\n'
-      );
+  const generatedJS = [];
+  require('scratch-vm/src/compiler/jsgen').testingApparatus = {
+    report: (jsgen, factorySource) => {
+      const targetName = jsgen.target.getName();
+      const scriptName = jsgen.script.procedureCode || 'script';
+      generatedJS.push(`// ${targetName} ${scriptName}\n${factorySource}`);
+    }
+  };
+
+  const errors = [];
+  vm.on('COMPILE_ERROR', (target, error) => {
+    errors.push({ target, error });
+  });
+
+  fs.readFile(filename, function (err, data) {
+    if (err) {
+      writeStderrSync(err + '\n');
       process.exit(1);
-    };
+    }
+
+    vm.loadProject(data)
+      .then(() => {
+        vm.runtime.precompile();
+
+        let result = '';
+        if (errors.length) {
+          result += '// Errors:\n';
+          result += errors.map((i) => `// ${i.target.getName()}: ${i.error}\n`);
+          result += '\n';
+        }
+        result += generatedJS.join('\n\n');
+        result += '\n';
+        writeStdoutSync(result);
+      })
+      .catch(function (err) {
+        writeStderrSync('scratch-vm encountered an error: ' + err + '\n');
+        process.exit(1);
+      });
+  });
+}
+
+function run_scratch_file(filename) {
+  const vm = construct_vm();
 
   // _scratch_run_* are called from the generated code by scratch-vm's compiler
   let stdoutBuffer = '';
@@ -129,8 +171,6 @@ function run_scratch_file(filename) {
           target.setVisible(false);
         }
         vm.runtime.precompile();
-        vm.setTurboMode(true);
-        vm.setFramerate(250);
         vm.start();
         vm.greenFlag();
       })
@@ -142,8 +182,10 @@ function run_scratch_file(filename) {
 }
 
 const filename = argv._[0];
-if (process.argv[2] === '--check') {
+if (argv.check) {
   check_scratch_file(filename);
+} else if (argv['print-generated-js']) {
+  print_generated_js(filename);
 } else {
   run_scratch_file(filename);
 }
