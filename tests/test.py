@@ -106,6 +106,18 @@ class TestScratchRun(unittest.TestCase):
         self.assertEqual(stdout, b'123\n132\n213\n231\n312\n321\n')
         self.assertEqual(stderr, b'')
 
+    def test_stopall(self):
+        proc = Popen([self.executable, 'stopall.sb3'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        try:
+            stdout, stderr = proc.communicate(timeout=1)
+        except TimeoutExpired:
+            proc.kill()
+            raise
+
+        self.assertEqual(proc.returncode, 0)
+        self.assertEqual(stdout, b'')
+        self.assertEqual(stderr, b'')
+
     def test_sum_1ton(self):
         N = 100000
         inp = f'{N}\n'

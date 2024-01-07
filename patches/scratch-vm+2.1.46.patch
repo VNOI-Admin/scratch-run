@@ -183,7 +183,7 @@ index 7e94ee9..4082784 100644
                      spriteName: targetId ? sequencer.runtime.getTargetById(targetId).getName() : null,
                      value: resolvedValue
 diff --git a/node_modules/scratch-vm/src/engine/runtime.js b/node_modules/scratch-vm/src/engine/runtime.js
-index 6cfe302..dc0ee7e 100644
+index 6cfe302..b414b7b 100644
 --- a/node_modules/scratch-vm/src/engine/runtime.js
 +++ b/node_modules/scratch-vm/src/engine/runtime.js
 @@ -1,5 +1,5 @@
@@ -219,7 +219,15 @@ index 6cfe302..dc0ee7e 100644
              this._monitorState = emptyMonitorState;
              this.emit(Runtime.MONITORS_UPDATE, this._monitorState);
          }
-@@ -2494,7 +2494,7 @@ class Runtime extends EventEmitter {
+@@ -2484,6 +2484,7 @@ class Runtime extends EventEmitter {
+         // Clean up threads that were told to stop during or since the last step
+         this.threads = this.threads.filter(thread => !thread.isKilled);
+         this.updateThreadMap();
++        this._emitProjectRunStatus(this.threads.length - this._getMonitorThreadCount(this.threads));
+ 
+         // Find all edge-activated hats, and add them to threads to be evaluated.
+         for (const hatType in this._hats) {
+@@ -2494,7 +2495,7 @@ class Runtime extends EventEmitter {
              }
          }
          this.redrawRequested = false;
@@ -228,7 +236,7 @@ index 6cfe302..dc0ee7e 100644
          if (this.profiler !== null) {
              if (stepThreadsProfilerId === -1) {
                  stepThreadsProfilerId = this.profiler.idByName('Sequencer.stepThreads');
-@@ -2540,7 +2540,7 @@ class Runtime extends EventEmitter {
+@@ -2540,7 +2541,7 @@ class Runtime extends EventEmitter {
              this._refreshTargets = false;
          }
  
@@ -237,7 +245,7 @@ index 6cfe302..dc0ee7e 100644
              this.emit(Runtime.MONITORS_UPDATE, this._monitorState);
              this._prevMonitorState = this._monitorState;
          }
-@@ -2662,10 +2662,10 @@ class Runtime extends EventEmitter {
+@@ -2662,10 +2663,10 @@ class Runtime extends EventEmitter {
          width = Math.round(Math.max(1, width));
          height = Math.round(Math.max(1, height));
          if (this.stageWidth !== width || this.stageHeight !== height) {
@@ -251,7 +259,7 @@ index 6cfe302..dc0ee7e 100644
                  const offsetX = deltaX / 2;
                  const offsetY = deltaY / 2;
                  for (const monitor of this._monitorState.valueSeq()) {
-@@ -3053,6 +3053,7 @@ class Runtime extends EventEmitter {
+@@ -3053,6 +3054,7 @@ class Runtime extends EventEmitter {
       * @param {!MonitorRecord} monitor Monitor to add.
       */
      requestAddMonitor (monitor) {
@@ -259,7 +267,7 @@ index 6cfe302..dc0ee7e 100644
          const id = monitor.get('id');
          if (!this.requestUpdateMonitor(monitor)) { // update monitor if it exists in the state
              // if the monitor did not exist in the state, add it
-@@ -3068,6 +3069,7 @@ class Runtime extends EventEmitter {
+@@ -3068,6 +3070,7 @@ class Runtime extends EventEmitter {
       * @return {boolean} true if monitor exists in the state and was updated, false if it did not exist.
       */
      requestUpdateMonitor (monitor) {
@@ -267,7 +275,7 @@ index 6cfe302..dc0ee7e 100644
          const id = monitor.get('id');
          if (this._monitorState.has(id)) {
              this._monitorState =
-@@ -3089,6 +3091,7 @@ class Runtime extends EventEmitter {
+@@ -3089,6 +3092,7 @@ class Runtime extends EventEmitter {
       * @param {!string} monitorId ID of the monitor to remove.
       */
      requestRemoveMonitor (monitorId) {
@@ -275,7 +283,7 @@ index 6cfe302..dc0ee7e 100644
          this._monitorState = this._monitorState.delete(monitorId);
      }
  
-@@ -3098,6 +3101,7 @@ class Runtime extends EventEmitter {
+@@ -3098,6 +3102,7 @@ class Runtime extends EventEmitter {
       * @return {boolean} true if monitor exists and was updated, false otherwise
       */
      requestHideMonitor (monitorId) {
@@ -283,7 +291,7 @@ index 6cfe302..dc0ee7e 100644
          return this.requestUpdateMonitor(new Map([
              ['id', monitorId],
              ['visible', false]
-@@ -3111,6 +3115,7 @@ class Runtime extends EventEmitter {
+@@ -3111,6 +3116,7 @@ class Runtime extends EventEmitter {
       * @return {boolean} true if monitor exists and was updated, false otherwise
       */
      requestShowMonitor (monitorId) {
@@ -291,7 +299,7 @@ index 6cfe302..dc0ee7e 100644
          return this.requestUpdateMonitor(new Map([
              ['id', monitorId],
              ['visible', true]
-@@ -3123,6 +3128,7 @@ class Runtime extends EventEmitter {
+@@ -3123,6 +3129,7 @@ class Runtime extends EventEmitter {
       * @param {!string} targetId Remove all monitors with given target ID.
       */
      requestRemoveMonitorByTargetId (targetId) {
