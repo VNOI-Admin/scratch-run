@@ -1,5 +1,9 @@
 # scratch-run changelog
 
+### v0.1.4
+
+- Patch compiler to squeeze more performance
+
 ### v0.1.3
 
 - Fix infinite loop when `control.stopAll` is used
