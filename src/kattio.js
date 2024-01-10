@@ -9,7 +9,17 @@ const Kattio = {
   _ensure: function () {
     if (this._bufPos === this._bufLen) {
       this._bufPos = 0;
-      this._bufLen = fs.readSync(0, this._buf, 0, this._buf.length, null);
+      try {
+        this._bufLen = fs.readSync(0, this._buf, 0, this._buf.length, null);
+      } catch (error) {
+        // Ref: https://github.com/nodejs/node/issues/35997
+        if (error.code === 'EOF') {
+          this._bufLen = 0;
+          return;
+        }
+
+        throw error;
+      }
     }
   },
 
