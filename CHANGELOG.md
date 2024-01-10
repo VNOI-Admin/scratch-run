@@ -1,5 +1,9 @@
 # scratch-run changelog
 
+### v0.1.5
+
+- Fix `fs.readSync` potentially throwing EOF error on Windows
+
 ### v0.1.4
 
 - Patch compiler to squeeze more performance
