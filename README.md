@@ -1,6 +1,6 @@
 # scratch-run [![Build Status](https://github.com/VNOI-Admin/scratch-run/actions/workflows/main.yml/badge.svg)](https://github.com/VNOI-Admin/scratch-run/actions/)
 
-scratch-run is a CLI interpreter for Scratch based on [scratch-vm](https://github.com/LLK/scratch-vm).
+scratch-run is a CLI interpreter for Scratch based on [scratch-vm](https://github.com/TurboWarp/scratch-vm).
 
 scratch-run was created to judge solutions written in Scratch. It is used mainly in our official online judge [VNOJ](https://github.com/VNOI-Admin/OJ), but it can also be used separately.
 
