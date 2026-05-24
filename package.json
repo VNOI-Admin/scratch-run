@@ -25,19 +25,15 @@
   "dependencies": {
     "fastestsmallesttextencoderdecoder": "^1.0.22",
     "minimist": "^1.2.8",
-    "scratch-vm": "git+https://github.com/TurboWarp/scratch-vm.git#e4e461ac84b1d61a3e7468aa6dbc8b56a2ece35e"
+    "scratch-vm": "git+https://github.com/TurboWarp/scratch-vm.git#43f13efd1883eeef8f82616faf69380ff75ab068"
   },
   "devDependencies": {
-    "esbuild-loader": "^4.0.2",
+    "@yao-pkg/pkg": "^6.19.0",
+    "esbuild-loader": "^4.4.3",
     "patch-package": "^8.0.0",
-    "pkg": "^5.8.1",
-    "webpack": "4.47.0",
-    "webpack-bundle-analyzer": "^4.10.1",
-    "webpack-cli": "4.10.0"
+    "webpack": "^5.106.2",
+    "webpack-bundle-analyzer": "^5.3.0",
+    "webpack-cli": "^7.0.2"
   },
-  "overrides": {
-    "webpack@4.47.0": {
-      "terser-webpack-plugin": "^4.2.3"
-    }
-  }
+  "packageManager": "yarn@4.14.1"
 }

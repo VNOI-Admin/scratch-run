@@ -7,7 +7,7 @@ const noop_module_path = path.resolve(__dirname, 'src', 'build', 'noop-module');
 
 module.exports = {
   mode: 'production',
-  devtool: '',
+  devtool: false,
   target: 'node',
   output: {
     filename: 'index.js',

@@ -1,21 +1,19 @@
 diff --git a/node_modules/scratch-vm/src/compiler/compat-blocks.js b/node_modules/scratch-vm/src/compiler/compat-blocks.js
-index 1c9d8f5..67f2221 100644
+index 86f03f26..e438bb20 100644
 --- a/node_modules/scratch-vm/src/compiler/compat-blocks.js
 +++ b/node_modules/scratch-vm/src/compiler/compat-blocks.js
-@@ -8,12 +8,8 @@
+@@ -10,10 +10,8 @@
  const stacked = [
      'looks_changestretchby',
      'looks_hideallsprites',
--    'looks_say',
 -    'looks_sayforsecs',
      'looks_setstretchto',
      'looks_switchbackdroptoandwait',
--    'looks_think',
 -    'looks_thinkforsecs',
      'motion_align_scene',
      'motion_glidesecstoxy',
      'motion_glideto',
-@@ -21,7 +17,6 @@ const stacked = [
+@@ -21,7 +19,6 @@ const stacked = [
      'motion_pointtowards',
      'motion_scroll_right',
      'motion_scroll_up',
@@ -23,64 +21,72 @@ index 1c9d8f5..67f2221 100644
      'sensing_setdragmode',
      'sound_changeeffectby',
      'sound_changevolumeby',
+diff --git a/node_modules/scratch-vm/src/compiler/enums.js b/node_modules/scratch-vm/src/compiler/enums.js
+index 1d493bf4..2f798dda 100644
+--- a/node_modules/scratch-vm/src/compiler/enums.js
++++ b/node_modules/scratch-vm/src/compiler/enums.js
+@@ -180,6 +180,7 @@ const StackOpcode = {
+     PEN_STAMP: 'pen.stamp',
+ 
+     SENSING_TIMER_RESET: 'timer.reset',
++    SENSING_ASK: 'sensing.ask',
+ 
+     PROCEDURE_RETURN: 'procedures.return',
+     PROCEDURE_CALL: 'procedures.call'
 diff --git a/node_modules/scratch-vm/src/compiler/irgen.js b/node_modules/scratch-vm/src/compiler/irgen.js
-index c2cf19d..1ea3813 100644
+index 08d1701f..a029a442 100644
 --- a/node_modules/scratch-vm/src/compiler/irgen.js
 +++ b/node_modules/scratch-vm/src/compiler/irgen.js
-@@ -1147,6 +1147,26 @@ class ScriptTreeGenerator {
-                 kind: 'timer.reset'
-             };
- 
-+        case 'looks_say':
-+        case 'looks_sayforsecs':
-+            return {
-+                kind: 'looks.say',
-+                message: this.descendInputOfBlock(block, 'MESSAGE')
-+            }
-+
-+        case 'looks_think':
-+        case 'looks_thinkforsecs':
-+            return {
-+                kind: 'looks.think',
-+                message: this.descendInputOfBlock(block, 'MESSAGE')
-+            }
-+
+@@ -691,6 +691,10 @@ class ScriptTreeGenerator {
+             return new IntermediateStackBlock(StackOpcode.CONTROL_WAIT_UNTIL, {
+                 condition: this.descendInputOfBlock(block, 'CONDITION').toType(InputType.BOOLEAN)
+             }, true);
 +        case 'sensing_askandwait':
-+            return {
-+                kind: 'sensing.ask',
++            return new IntermediateStackBlock(StackOpcode.SENSING_ASK, {
 +                question: this.descendInputOfBlock(block, 'QUESTION')
-+            };
-+
-         default: {
-             const opcodeFunction = this.runtime.getOpcodeFunction(block.opcode);
-             if (opcodeFunction) {
-@@ -1363,7 +1383,7 @@ class ScriptTreeGenerator {
-         }
++            });
+         case 'control_while':
+             return new IntermediateStackBlock(StackOpcode.CONTROL_WHILE, {
+                 condition: this.descendInputOfBlock(block, 'CONDITION').toType(InputType.BOOLEAN),
+@@ -809,6 +813,7 @@ class ScriptTreeGenerator {
+         case 'looks_nextcostume':
+             return new IntermediateStackBlock(StackOpcode.LOOKS_COSTUME_NEXT);
+         case 'looks_say':
++        case 'looks_sayforsecs':
+             return new IntermediateStackBlock(StackOpcode.LOOKS_SAY, {
+                 message: this.descendInputOfBlock(block, 'MESSAGE')
+             });
+@@ -832,6 +837,7 @@ class ScriptTreeGenerator {
+                 costume: this.descendInputOfBlock(block, 'COSTUME', true)
+             });
+         case 'looks_think':
++        case 'looks_thinkforsecs':
+             return new IntermediateStackBlock(StackOpcode.LOOKS_THINK, {
+                 message: this.descendInputOfBlock(block, 'MESSAGE')
+             });
+@@ -1113,7 +1119,7 @@ class ScriptTreeGenerator {
+                 variant,
+                 arguments: args
+             },
+-            yields: !this.script.isWarp && procedureCode === this.script.procedureCode
++            yields: false
+         };
+     }
  
-         // Non-warp direct recursion yields.
--        if (!this.script.isWarp) {
-+        if (false && !this.script.isWarp) {
-             if (procedureCode === this.script.procedureCode) {
-                 this.script.yields = true;
-             }
-@@ -1435,9 +1455,9 @@ class ScriptTreeGenerator {
+@@ -1318,7 +1324,7 @@ class ScriptTreeGenerator {
      }
  
      analyzeLoop () {
--        if (!this.script.isWarp || this.script.warpTimer) {
--            this.script.yields = true;
--        }
-+        // if (!this.script.isWarp || this.script.warpTimer) {
-+        //     this.script.yields = true;
-+        // }
+-        return !this.script.isWarp || this.script.warpTimer;
++        return false;
      }
  
      readTopBlockComment (commentId) {
 diff --git a/node_modules/scratch-vm/src/compiler/jsexecute.js b/node_modules/scratch-vm/src/compiler/jsexecute.js
-index ec7d683..e97236b 100644
+index 61d69cd3..642f0809 100644
 --- a/node_modules/scratch-vm/src/compiler/jsexecute.js
 +++ b/node_modules/scratch-vm/src/compiler/jsexecute.js
-@@ -445,7 +445,6 @@ runtimeFunctions.listReplace = `const listReplace = (list, idx, value) => {
+@@ -459,7 +459,6 @@ runtimeFunctions.listReplace = `const listReplace = (list, idx, value) => {
          return;
      }
      list.value[index] = value;
@@ -88,7 +94,7 @@ index ec7d683..e97236b 100644
  }`;
  
  /**
-@@ -460,7 +459,6 @@ runtimeFunctions.listInsert = `const listInsert = (list, idx, value) => {
+@@ -474,7 +473,6 @@ runtimeFunctions.listInsert = `const listInsert = (list, idx, value) => {
          return;
      }
      list.value.splice(index, 0, value);
@@ -96,7 +102,7 @@ index ec7d683..e97236b 100644
  }`;
  
  /**
-@@ -478,7 +476,6 @@ runtimeFunctions.listDelete = `const listDelete = (list, idx) => {
+@@ -492,7 +490,6 @@ runtimeFunctions.listDelete = `const listDelete = (list, idx) => {
          return;
      }
      list.value.splice(index, 1);
@@ -105,215 +111,113 @@ index ec7d683..e97236b 100644
  
  /**
 diff --git a/node_modules/scratch-vm/src/compiler/jsgen.js b/node_modules/scratch-vm/src/compiler/jsgen.js
-index bf9cbf3..750da73 100644
+index ebbdc6bf..dab098c5 100644
 --- a/node_modules/scratch-vm/src/compiler/jsgen.js
 +++ b/node_modules/scratch-vm/src/compiler/jsgen.js
-@@ -781,7 +781,7 @@ class JSGenerator {
+@@ -534,7 +534,6 @@ class JSGenerator {
                  }
                  this.source += '}\n'; // close switch
                  this.source += `if (!${branchVariable}.isLoop) break;\n`;
 -                this.yieldLoop();
-+                // this.yieldLoop();
                  this.source += '}\n'; // close while
              } else {
                  throw new Error(`Unknown block type: ${blockType}`);
-@@ -811,7 +811,7 @@ class JSGenerator {
+@@ -593,7 +592,6 @@ class JSGenerator {
              this.source += `${index}++; `;
              this.source += `${this.referenceVariable(node.variable)}.value = ${index};\n`;
              this.descendStack(node.do, new Frame(true));
 -            this.yieldLoop();
-+            // this.yieldLoop();
              this.source += '}\n';
              break;
          }
-@@ -830,7 +830,7 @@ class JSGenerator {
-             const i = this.localVariables.next();
-             this.source += `for (var ${i} = ${this.descendInput(node.times).asNumber()}; ${i} >= 0.5; ${i}--) {\n`;
+@@ -616,7 +614,6 @@ class JSGenerator {
+                 this.source += `for (var ${i} = ${this.descendInput(node.times)}; ${i} >= 0.5; ${i}--) {\n`;
+             }
              this.descendStack(node.do, new Frame(true));
 -            this.yieldLoop();
-+            // this.yieldLoop();
              this.source += `}\n`;
              break;
          }
-@@ -868,11 +868,11 @@ class JSGenerator {
-             this.resetVariableInputs();
-             this.source += `while (${this.descendInput(node.condition).asBoolean()}) {\n`;
+@@ -652,11 +649,6 @@ class JSGenerator {
+         case StackOpcode.CONTROL_WHILE:
+             this.source += `while (${this.descendInput(node.condition)}) {\n`;
              this.descendStack(node.do, new Frame(true));
 -            if (node.warpTimer) {
 -                this.yieldStuckOrNotWarp();
 -            } else {
 -                this.yieldLoop();
 -            }
-+            // if (node.warpTimer) {
-+            //     this.yieldStuckOrNotWarp();
-+            // } else {
-+            //     this.yieldLoop();
-+            // }
              this.source += `}\n`;
              break;
- 
-@@ -921,7 +921,6 @@ class JSGenerator {
-         case 'list.add': {
+         case StackOpcode.CONTROL_CLEAR_COUNTER:
+@@ -677,19 +669,16 @@ class JSGenerator {
+         case StackOpcode.LIST_ADD: {
              const list = this.referenceVariable(node.list);
-             this.source += `${list}.value.push(${this.descendInput(node.item).asSafe()});\n`;
+             this.source += `${list}.value.push(${this.descendInput(node.item)});\n`;
 -            this.source += `${list}._monitorUpToDate = false;\n`;
              break;
          }
-         case 'list.delete': {
-@@ -930,12 +929,10 @@ class JSGenerator {
-             if (index instanceof ConstantInput) {
-                 if (index.constantValue === 'last') {
-                     this.source += `${list}.value.pop();\n`;
--                    this.source += `${list}._monitorUpToDate = false;\n`;
-                     break;
-                 }
-                 if (+index.constantValue === 1) {
-                     this.source += `${list}.value.shift();\n`;
--                    this.source += `${list}._monitorUpToDate = false;\n`;
-                     break;
-                 }
-                 // do not need a special case for all as that is handled in IR generation (list.deleteAll)
-@@ -955,7 +952,6 @@ class JSGenerator {
-             const item = this.descendInput(node.item);
-             if (index instanceof ConstantInput && +index.constantValue === 1) {
-                 this.source += `${list}.value.unshift(${item.asSafe()});\n`;
+         case StackOpcode.LIST_DELETE: {
+             const list = this.referenceVariable(node.list);
+             if (node.index.isConstant('last')) {
+                 this.source += `${list}.value.pop();\n`;
 -                this.source += `${list}._monitorUpToDate = false;\n`;
                  break;
              }
-             this.source += `listInsert(${list}, ${index.asUnknown()}, ${item.asSafe()});\n`;
-@@ -1111,10 +1107,10 @@ class JSGenerator {
+             if (node.index.isConstant(1)) {
+                 this.source += `${list}.value.shift();\n`;
+-                this.source += `${list}._monitorUpToDate = false;\n`;
                  break;
              }
+             // do not need a special case for all as that is handled in IR generation (list.deleteAll)
+@@ -707,7 +696,6 @@ class JSGenerator {
+             const item = this.descendInput(node.item);
+             if (node.index.isConstant(1)) {
+                 this.source += `${list}.value.unshift(${item});\n`;
+-                this.source += `${list}._monitorUpToDate = false;\n`;
+                 break;
+             }
+             this.source += `listInsert(${list}, ${this.descendInput(node.index)}, ${item});\n`;
+@@ -780,10 +768,13 @@ class JSGenerator {
+             this.source += `runtime.ext_scratch3_looks._setCostume(target, ${this.descendInput(node.costume)});\n`;
+             break;
+         case StackOpcode.LOOKS_SAY:
+-            this.source += `runtime.ext_scratch3_looks._say(${this.descendInput(node.message)}, target);\n`;
++            this.source += `runtime._scratch_run_say(${this.descendInput(node.message.toType(InputType.STRING))});\n`;
+             break;
+         case StackOpcode.LOOKS_THINK:
+-            this.source += `runtime.ext_scratch3_looks._think(${this.descendInput(node.message)}, target);\n`;
++            this.source += `runtime._scratch_run_think(${this.descendInput(node.message.toType(InputType.STRING))});\n`;
++            break;
++        case StackOpcode.SENSING_ASK:
++            this.source += `runtime.ext_scratch3_sensing._answer = runtime._scratch_run_ask(${this.descendInput(node.question.toType(InputType.STRING))});\n`;
+             break;
  
+         case StackOpcode.MOTION_X_CHANGE:
+@@ -861,18 +852,12 @@ class JSGenerator {
+             break;
+ 
+         case StackOpcode.PROCEDURE_CALL: {
+-            const procedureCode = node.code;
+             const procedureVariant = node.variant;
+             const procedureData = this.ir.procedures[procedureVariant];
+             if (procedureData.stack === null) {
+                 // TODO still need to evaluate arguments
+                 break;
+             }
 -            const yieldForRecursion = !this.isWarp && procedureCode === this.script.procedureCode;
 -            if (yieldForRecursion) {
+-                // Direct yields.
 -                this.yieldNotWarp();
 -            }
-+            // const yieldForRecursion = !this.isWarp && procedureCode === this.script.procedureCode;
-+            // if (yieldForRecursion) {
-+            //     this.yieldNotWarp();
-+            // }
- 
              if (procedureData.yields) {
                  this.source += 'yield* ';
-@@ -1167,6 +1163,18 @@ class JSGenerator {
-             break;
-         }
- 
-+        case 'sensing.ask':
-+            this.source += `runtime.ext_scratch3_sensing._answer = runtime._scratch_run_ask(${this.descendInput(node.question).asString()});\n`;
-+            break;
-+
-+        case 'looks.say':
-+            this.source += `runtime._scratch_run_say(${this.descendInput(node.message).asString()});\n`;
-+            break;
-+
-+        case 'looks.think':
-+            this.source += `runtime._scratch_run_think(${this.descendInput(node.message).asString()});\n`;
-+            break;
-+
-         default:
-             log.warn(`JS: Unknown stacked block: ${node.kind}`, node);
-             throw new Error(`JS: Unknown stacked block: ${node.kind}`);
-diff --git a/node_modules/scratch-vm/src/engine/blocks.js b/node_modules/scratch-vm/src/engine/blocks.js
-index 71ace3a..7e6357b 100644
---- a/node_modules/scratch-vm/src/engine/blocks.js
-+++ b/node_modules/scratch-vm/src/engine/blocks.js
-@@ -1,9 +1,9 @@
- const adapter = require('./adapter');
- const mutationAdapter = require('./mutation-adapter');
- const xmlEscape = require('../util/xml-escape');
--const MonitorRecord = require('./monitor-record');
-+// const MonitorRecord = require('./monitor-record');
- const Clone = require('../util/clone');
--const {Map} = require('immutable');
-+// const {Map} = require('immutable');
- const BlocksExecuteCache = require('./blocks-execute-cache');
- const BlocksRuntimeCache = require('./blocks-runtime-cache');
- const log = require('../util/log');
-@@ -709,8 +709,8 @@ class Blocks {
-                     this.runtime.requestBlocksUpdate();
-                 }
- 
--                const flyoutBlock = block.shadow && block.parent ? this._blocks[block.parent] : block;
--                if (flyoutBlock.isMonitored) {
-+                // const flyoutBlock = block.shadow && block.parent ? this._blocks[block.parent] : block;
-+                if (false && flyoutBlock.isMonitored) {
-                     this.runtime.requestUpdateMonitor(Map({
-                         id: flyoutBlock.id,
-                         params: this._getBlockParams(flyoutBlock)
-@@ -768,9 +768,9 @@ class Blocks {
-                 block.targetId = null;
-             }
- 
--            if (wasMonitored && !block.isMonitored) {
-+            if (false && wasMonitored && !block.isMonitored) {
-                 this.runtime.requestHideMonitor(block.id);
--            } else if (!wasMonitored && block.isMonitored) {
-+            } else if (false && !wasMonitored && block.isMonitored) {
-                 // Tries to show the monitor for specified block. If it doesn't exist, add the monitor.
-                 if (!this.runtime.requestShowMonitor(block.id)) {
-                     this.runtime.requestAddMonitor(MonitorRecord({
-diff --git a/node_modules/scratch-vm/src/engine/execute.js b/node_modules/scratch-vm/src/engine/execute.js
-index 7e94ee9..4082784 100644
---- a/node_modules/scratch-vm/src/engine/execute.js
-+++ b/node_modules/scratch-vm/src/engine/execute.js
-@@ -2,7 +2,7 @@ const BlockUtility = require('./block-utility');
- const BlocksExecuteCache = require('./blocks-execute-cache');
- const log = require('../util/log');
- const Thread = require('./thread');
--const {Map} = require('immutable');
-+// const {Map} = require('immutable');
- const cast = require('../util/cast');
- 
- /**
-@@ -100,7 +100,7 @@ const handleReport = function (resolvedValue, sequencer, thread, blockCached, la
-                     // Target no longer exists
-                     return;
-                 }
--                sequencer.runtime.requestUpdateMonitor(Map({
-+                if (false) sequencer.runtime.requestUpdateMonitor(Map({
-                     id: currentBlockId,
-                     spriteName: targetId ? sequencer.runtime.getTargetById(targetId).getName() : null,
-                     value: resolvedValue
+                 if (!this.script.yields) {
 diff --git a/node_modules/scratch-vm/src/engine/runtime.js b/node_modules/scratch-vm/src/engine/runtime.js
-index 6cfe302..c7f92f8 100644
+index 1df8dff1..a2c48d7d 100644
 --- a/node_modules/scratch-vm/src/engine/runtime.js
 +++ b/node_modules/scratch-vm/src/engine/runtime.js
-@@ -1,5 +1,5 @@
- const EventEmitter = require('events');
--const {OrderedMap} = require('immutable');
-+// const {OrderedMap} = require('immutable');
- const ExtendedJSON = require('@turbowarp/json');
- const uuid = require('uuid');
- 
-@@ -320,12 +320,12 @@ class Runtime extends EventEmitter {
-         /**
-          * Ordered map of all monitors, which are MonitorReporter objects.
-          */
--        this._monitorState = OrderedMap({});
-+        // this._monitorState = OrderedMap({});
- 
-         /**
-          * Monitor state from last tick
-          */
--        this._prevMonitorState = OrderedMap({});
-+        // this._prevMonitorState = OrderedMap({});
- 
-         /**
-          * Whether the project is in "turbo mode."
-@@ -2247,8 +2247,8 @@ class Runtime extends EventEmitter {
-         this.targets.map(this.disposeTarget, this);
-         this.extensionStorage = {};
-         // tw: explicitly emit a MONITORS_UPDATE instead of relying on implicit behavior of _step()
--        const emptyMonitorState = OrderedMap({});
--        if (!emptyMonitorState.equals(this._monitorState)) {
-+        // const emptyMonitorState = OrderedMap({});
-+        if (false && !emptyMonitorState.equals(this._monitorState)) {
-             this._monitorState = emptyMonitorState;
-             this.emit(Runtime.MONITORS_UPDATE, this._monitorState);
-         }
-@@ -2484,6 +2484,7 @@ class Runtime extends EventEmitter {
+@@ -2523,6 +2523,7 @@ class Runtime extends EventEmitter {
          // Clean up threads that were told to stop during or since the last step
          this.threads = this.threads.filter(thread => !thread.isKilled);
          this.updateThreadMap();
@@ -321,149 +225,11 @@ index 6cfe302..c7f92f8 100644
  
          // Find all edge-activated hats, and add them to threads to be evaluated.
          for (const hatType in this._hats) {
-@@ -2494,7 +2495,7 @@ class Runtime extends EventEmitter {
+@@ -2533,7 +2534,6 @@ class Runtime extends EventEmitter {
              }
          }
          this.redrawRequested = false;
 -        this._pushMonitors();
-+        // this._pushMonitors();
          if (this.profiler !== null) {
              if (stepThreadsProfilerId === -1) {
                  stepThreadsProfilerId = this.profiler.idByName('Sequencer.stepThreads');
-@@ -2540,7 +2541,7 @@ class Runtime extends EventEmitter {
-             this._refreshTargets = false;
-         }
- 
--        if (!this._prevMonitorState.equals(this._monitorState)) {
-+        if (false && !this._prevMonitorState.equals(this._monitorState)) {
-             this.emit(Runtime.MONITORS_UPDATE, this._monitorState);
-             this._prevMonitorState = this._monitorState;
-         }
-@@ -2662,10 +2663,10 @@ class Runtime extends EventEmitter {
-         width = Math.round(Math.max(1, width));
-         height = Math.round(Math.max(1, height));
-         if (this.stageWidth !== width || this.stageHeight !== height) {
--            const deltaX = width - this.stageWidth;
--            const deltaY = height - this.stageHeight;
-+            // const deltaX = width - this.stageWidth;
-+            // const deltaY = height - this.stageHeight;
-             // Preserve monitor location relative to the center of the stage
--            if (this._monitorState.size > 0) {
-+            if (false && this._monitorState.size > 0) {
-                 const offsetX = deltaX / 2;
-                 const offsetY = deltaY / 2;
-                 for (const monitor of this._monitorState.valueSeq()) {
-@@ -3053,6 +3054,7 @@ class Runtime extends EventEmitter {
-      * @param {!MonitorRecord} monitor Monitor to add.
-      */
-     requestAddMonitor (monitor) {
-+        return;
-         const id = monitor.get('id');
-         if (!this.requestUpdateMonitor(monitor)) { // update monitor if it exists in the state
-             // if the monitor did not exist in the state, add it
-@@ -3068,6 +3070,7 @@ class Runtime extends EventEmitter {
-      * @return {boolean} true if monitor exists in the state and was updated, false if it did not exist.
-      */
-     requestUpdateMonitor (monitor) {
-+        return true;
-         const id = monitor.get('id');
-         if (this._monitorState.has(id)) {
-             this._monitorState =
-@@ -3089,6 +3092,7 @@ class Runtime extends EventEmitter {
-      * @param {!string} monitorId ID of the monitor to remove.
-      */
-     requestRemoveMonitor (monitorId) {
-+        return;
-         this._monitorState = this._monitorState.delete(monitorId);
-     }
- 
-@@ -3098,6 +3102,7 @@ class Runtime extends EventEmitter {
-      * @return {boolean} true if monitor exists and was updated, false otherwise
-      */
-     requestHideMonitor (monitorId) {
-+        return true;
-         return this.requestUpdateMonitor(new Map([
-             ['id', monitorId],
-             ['visible', false]
-@@ -3111,6 +3116,7 @@ class Runtime extends EventEmitter {
-      * @return {boolean} true if monitor exists and was updated, false otherwise
-      */
-     requestShowMonitor (monitorId) {
-+        return true;
-         return this.requestUpdateMonitor(new Map([
-             ['id', monitorId],
-             ['visible', true]
-@@ -3123,6 +3129,7 @@ class Runtime extends EventEmitter {
-      * @param {!string} targetId Remove all monitors with given target ID.
-      */
-     requestRemoveMonitorByTargetId (targetId) {
-+        return;
-         this._monitorState = this._monitorState.filterNot(value => value.targetId === targetId);
-     }
- 
-diff --git a/node_modules/scratch-vm/src/engine/target.js b/node_modules/scratch-vm/src/engine/target.js
-index e9cecfe..ef24579 100644
---- a/node_modules/scratch-vm/src/engine/target.js
-+++ b/node_modules/scratch-vm/src/engine/target.js
-@@ -4,7 +4,7 @@ const Blocks = require('./blocks');
- const Variable = require('../engine/variable');
- const Comment = require('../engine/comment');
- const uid = require('../util/uid');
--const {Map} = require('immutable');
-+// const {Map} = require('immutable');
- const log = require('../util/log');
- const StringUtil = require('../util/string-util');
- const VariableUtil = require('../util/variable-util');
-@@ -350,8 +350,8 @@ class Target extends EventEmitter {
-                         name: variable.type === Variable.LIST_TYPE ? 'LIST' : 'VARIABLE',
-                         value: id
-                     }, this.runtime);
--                    const monitorBlock = blocks.getBlock(variable.id);
--                    if (monitorBlock) {
-+                    // const monitorBlock = blocks.getBlock(variable.id + 'lebaohiep');
-+                    if (false && monitorBlock) {
-                         this.runtime.requestUpdateMonitor(Map({
-                             id: id,
-                             params: blocks._getBlockParams(monitorBlock)
-diff --git a/node_modules/scratch-vm/src/serialization/sb2.js b/node_modules/scratch-vm/src/serialization/sb2.js
-index 6dc9cef..26e97f9 100644
---- a/node_modules/scratch-vm/src/serialization/sb2.js
-+++ b/node_modules/scratch-vm/src/serialization/sb2.js
-@@ -16,7 +16,7 @@ const MathUtil = require('../util/math-util');
- const specMap = require('./sb2_specmap');
- const Comment = require('../engine/comment');
- const Variable = require('../engine/variable');
--const MonitorRecord = require('../engine/monitor-record');
-+// const MonitorRecord = require('../engine/monitor-record');
- const StageLayering = require('../engine/stage-layering');
- const ScratchXUtilities = require('../extension-support/tw-scratchx-utilities');
- 
-@@ -300,6 +300,7 @@ const globalBroadcastMsgStateGenerator = (function () {
-  */
- 
- const parseMonitorObject = (object, runtime, targets, extensions) => {
-+    return;
-     // If we can't find the block in the spec map, ignore it.
-     // This happens for things like Lego Wedo 1.0 monitors.
-     const mapped = specMap[object.cmd];
-diff --git a/node_modules/scratch-vm/src/serialization/sb3.js b/node_modules/scratch-vm/src/serialization/sb3.js
-index b760e05..aa76a63 100644
---- a/node_modules/scratch-vm/src/serialization/sb3.js
-+++ b/node_modules/scratch-vm/src/serialization/sb3.js
-@@ -8,7 +8,7 @@ const Blocks = require('../engine/blocks');
- const Sprite = require('../sprites/sprite');
- const Variable = require('../engine/variable');
- const Comment = require('../engine/comment');
--const MonitorRecord = require('../engine/monitor-record');
-+// const MonitorRecord = require('../engine/monitor-record');
- const StageLayering = require('../engine/stage-layering');
- const log = require('../util/log');
- const uid = require('../util/uid');
-@@ -1324,6 +1324,7 @@ const parseScratchObject = function (object, runtime, extensions, zip, assets) {
- };
- 
- const deserializeMonitor = function (monitorData, runtime, targets, extensions) {
-+    return;
-     // Monitors position is always stored as position from top-left corner in 480x360 stage.
-     const xOffset = (runtime.stageWidth - 480) / 2;
-     const yOffset = (runtime.stageHeight - 360) / 2;

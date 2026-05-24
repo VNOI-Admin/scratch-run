@@ -1,54 +1,31 @@
 #!/bin/bash
+set -e
 
-NODE_VERSION=16.16.0
+NODE_RANGE=node22.22.2
 
 VERSION=$(node -p -e "require('./package.json').version")
-BUILD_CMD="npx pkg ../dist/index.js"
 
 rm -rf bin dist
 npx webpack
 
 mkdir bin
-cd bin
 
-# Linux amd64
-$BUILD_CMD -t node"$NODE_VERSION"-linux-x64 --out-path linux-amd64
-cd linux-amd64
-mv index scratch-run
-zip "../scratch-run_"$VERSION"_linux_amd64.zip" scratch-run
-cd ..
+# build <pkg-arch> <output-dir> [exe-extension]
+build() {
+  local arch="$1" outdir="$2" ext="${3:-}"
 
-# Linux arm64
-$BUILD_CMD -t node"$NODE_VERSION"-linux-arm64 --out-path linux-arm64
-cd linux-arm64
-mv index scratch-run
-zip "../scratch-run_"$VERSION"_linux_arm64.zip" scratch-run
-cd ..
+  echo "==> Building $outdir ($NODE_RANGE-$arch)"
+  mkdir -p "bin/$outdir"
+  npx @yao-pkg/pkg dist/index.js \
+    -t "$NODE_RANGE-$arch" \
+    -o "bin/$outdir/scratch-run$ext"
 
-# macOS amd64
-$BUILD_CMD -t node"$NODE_VERSION"-macos-x64 --out-path macos-amd64
-cd macos-amd64
-mv index scratch-run
-zip "../scratch-run_"$VERSION"_macos_amd64.zip" scratch-run
-cd ..
+  ( cd "bin/$outdir" && zip "../scratch-run_${VERSION}_${outdir//-/_}.zip" "scratch-run$ext" )
+}
 
-# macOS arm64
-$BUILD_CMD -t node"$NODE_VERSION"-macos-arm64 --out-path macos-arm64
-cd macos-arm64
-mv index scratch-run
-zip "../scratch-run_"$VERSION"_macos_arm64.zip" scratch-run
-cd ..
-
-# Windows amd64
-$BUILD_CMD -t node"$NODE_VERSION"-win-x64 --out-path win-amd64
-cd win-amd64
-mv index.exe scratch-run.exe
-zip "../scratch-run_"$VERSION"_win_amd64.zip" scratch-run.exe
-cd ..
-
-# Windows arm64
-$BUILD_CMD -t node"$NODE_VERSION"-win-arm64 --out-path win-arm64
-cd win-arm64
-mv index.exe scratch-run.exe
-zip "../scratch-run_"$VERSION"_win_arm64.zip" scratch-run.exe
-cd ..
+build linux-x64    linux-amd64
+build linux-arm64  linux-arm64
+build macos-x64    macos-amd64
+build macos-arm64  macos-arm64
+build win-x64      win-amd64    .exe
+build win-arm64    win-arm64    .exe
