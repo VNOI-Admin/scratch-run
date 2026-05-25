@@ -29,6 +29,15 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.14'
+
+      # yarn re-packs the git deps per-OS and their archive checksum differs on
+      # Windows. The commit pin already fixes the source, so skip checksum
+      # verification on Windows only; Linux/macOS keep full verification.
+      - name: Ignore git-dep checksum (Windows only)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: echo "YARN_CHECKSUM_BEHAVIOR=ignore" >> $env:GITHUB_ENV
+
       - run: corepack enable
       - run: yarn install --immutable
 
