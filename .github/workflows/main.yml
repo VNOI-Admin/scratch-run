@@ -8,39 +8,56 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    name: ${{ matrix.outdir }}
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [22.x]
-        python-version: ['3.11']
+        include:
+          - { os: ubuntu-24.04,     target: linux-x64,   outdir: linux-amd64 }
+          - { os: ubuntu-24.04-arm, target: linux-arm64, outdir: linux-arm64 }
+          - { os: macos-26-intel,   target: macos-x64,   outdir: macos-amd64 }
+          - { os: macos-26,         target: macos-arm64, outdir: macos-arm64 }
+          - { os: windows-2025,     target: win-x64,     outdir: win-amd64, ext: .exe }
+          - { os: windows-11-arm,   target: win-arm64,   outdir: win-arm64, ext: .exe }
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node-version }}
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+          node-version: 22.x
+      - uses: actions/setup-python@v6
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Compile ldid
-        # yao-pkg ad-hoc signs the macOS binaries via ldid when building on Linux.
-        run: |
-          sudo apt install -y libplist-dev
-          git clone git://git.saurik.com/ldid.git
-          g++ -pipe -o ldid/ldid ldid/ldid.cpp -I. -x c ldid/lookup2.c -lcrypto -lplist -Os -fwhole-program -flto -s
-          echo "${{github.workspace}}/ldid" >> $GITHUB_PATH
+          python-version: '3.14'
       - run: corepack enable
       - run: yarn install --immutable
-      - run: yarn build
-      - run: python tests/test.py
+
+      - name: Build ${{ matrix.target }}
+        shell: bash
+        run: ./build.sh ${{ matrix.target }} ${{ matrix.outdir }} ${{ matrix.ext }}
+
+      - name: Ad-hoc sign (macOS)
+        if: runner.os == 'macOS'
+        run: codesign --force --sign - "bin/${{ matrix.outdir }}/scratch-run"
+
+      - name: Test
+        shell: bash
+        run: python tests/test.py
+
+      - name: Package
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          OUT='${{ matrix.outdir }}'
+          python -c "import shutil, sys; shutil.make_archive(sys.argv[1], 'zip', sys.argv[2])" \
+            "bin/scratch-run_${VERSION}_${OUT//-/_}" "bin/${OUT}"
+
       - name: Upload to Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: Artifacts
+          name: scratch-run-${{ matrix.outdir }}
           path: bin/*.zip
+
       - name: Upload to Release
         if: github.event_name == 'release'
         uses: svenstaro/upload-release-action@v2

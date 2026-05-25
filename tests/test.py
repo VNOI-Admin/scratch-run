@@ -8,15 +8,19 @@ os.chdir(__DIR__)
 
 
 def get_executable():
-    arch = 'arm64' if platform.machine() == 'aarch64' else 'amd64'
-    if platform.system() == 'Linux':
+    # platform.machine() reports the arch under different names per OS:
+    # Linux aarch64, macOS arm64, Windows ARM64 — all mean arm64.
+    machine = platform.machine().lower()
+    arch = 'arm64' if machine in ('aarch64', 'arm64') else 'amd64'
+    system = platform.system()
+    if system == 'Linux':
         return f'../bin/linux-{arch}/scratch-run'
-    elif platform.system() == 'Darwin':
+    elif system == 'Darwin':
         return f'../bin/macos-{arch}/scratch-run'
-    elif platform.system() == 'Windows':
-        return f'../bin/win-{arch}/scratch-run'
+    elif system == 'Windows':
+        return f'../bin/win-{arch}/scratch-run.exe'
     else:
-        raise RuntimeError('Unsupported platform: {}'.format(platform.system()))
+        raise RuntimeError('Unsupported platform: {}'.format(system))
 
 
 class TestScratchRun(unittest.TestCase):
