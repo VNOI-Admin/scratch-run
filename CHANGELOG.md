@@ -1,5 +1,10 @@
 # scratch-run changelog
 
+### v0.1.6
+
+- Use Node 22.22.2
+- Upgrade scratch-vm
+
 ### v0.1.5
 
 - Fix `fs.readSync` potentially throwing EOF error on Windows
