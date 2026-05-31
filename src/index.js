@@ -12,7 +12,7 @@ function writeStderrSync(text) {
 }
 
 const argv = require('minimist')(process.argv.slice(2), {
-  boolean: ['help', 'version', 'check', 'buffer-stdout', 'print-generated-js']
+  boolean: ['help', 'version', 'check', 'print-generated-js']
 });
 
 if (argv.version) {
@@ -27,7 +27,6 @@ Options:
   --help                  print this message
   --version               print the version
   --check                 validate project file
-  --buffer-stdout         buffer stdout for better performance
   --print-generated-js    print the generated JavaScript code
 `);
   process.exit(0);
@@ -121,23 +120,24 @@ function run_scratch_file(filename) {
   const vm = construct_vm();
 
   // _scratch_run_* are called from the generated code by scratch-vm's compiler
-  let stdoutBuffer = '';
-  if (argv['buffer-stdout']) {
-    vm.runtime._scratch_run_say = function (text) {
-      stdoutBuffer += text + '\n';
-    };
-    vm.runtime._scratch_run_think = function (text) {
-      stdoutBuffer += text;
-    };
-  } else {
-    vm.runtime._scratch_run_say = function (text) {
-      process.stdout.write(text + '\n');
-    };
-    vm.runtime._scratch_run_think = function (text) {
-      process.stdout.write(text);
-    };
-  }
+  let stdoutBuf = '';
+  const FLUSH_THRESHOLD = 65536;
+  const flushStdout = () => {
+    if (stdoutBuf) {
+      fs.writeSync(1, stdoutBuf);
+      stdoutBuf = '';
+    }
+  };
+  vm.runtime._scratch_run_say = function (text) {
+    stdoutBuf += text + '\n';
+    if (stdoutBuf.length >= FLUSH_THRESHOLD) flushStdout();
+  };
+  vm.runtime._scratch_run_think = function (text) {
+    stdoutBuf += text;
+    if (stdoutBuf.length >= FLUSH_THRESHOLD) flushStdout();
+  };
   vm.runtime._scratch_run_ask = function (question) {
+    flushStdout();
     try {
       if (question === 'read_token') {
         return Kattio.nextToken();
@@ -156,7 +156,8 @@ function run_scratch_file(filename) {
 
   vm.runtime.on('PROJECT_RUN_STOP', function () {
     vm.runtime.quit();
-    process.stdout.write(stdoutBuffer, () => process.exit(0));
+    flushStdout();
+    process.exit(0);
   });
 
   fs.readFile(filename, function (err, data) {
